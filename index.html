@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📅 ปฏิทินกิจกรรม (Firebase)</title>
+    <title>📅 Work Calendar (Firebase)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -90,16 +90,16 @@
     </div>
 
     <script>
-        // --- (สำคัญที่สุด) นำ FIREBASE CONFIG ที่ถูกต้องของคุณมาวางที่นี่ ---
-        // --- ใช้ config เดียวกับโปรเจกต์ kusuma-booking ได้เลย ---
+        // --- Firebase Configuration for work-calendar-fe6c1 ---
         const firebaseConfig = {
-          apiKey: "PASTE_YOUR_API_KEY_HERE",
-          authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
-          databaseURL: "PASTE_YOUR_DATABASE_URL_HERE", // สำคัญมาก
-          projectId: "PASTE_YOUR_PROJECT_ID_HERE",
-          storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
-          messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
-          appId: "PASTE_YOUR_APP_ID_HERE"
+          apiKey: "AIzaSyA6yXwcdOihGZcttFwdB6ax_Wb_S8NHMGQ",
+          authDomain: "work-calendar-fe6c1.firebaseapp.com",
+          databaseURL: "https://work-calendar-fe6c1-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "work-calendar-fe6c1",
+          storageBucket: "work-calendar-fe6c1.firebasestorage.app",
+          messagingSenderId: "792437599231",
+          appId: "1:792437599231:web:2420688ca88867f57155ca",
+          measurementId: "G-XK0NJMT3EG" // Optional
         };
 
         // Initialize Firebase
@@ -113,10 +113,40 @@
 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-        // --- วันหยุดและวันพระ (เหมือนเดิม) ---
-        const thaiHolidays = { '2025-01-01': 'วันขึ้นปีใหม่', '2025-02-12': 'วันมาฆบูชา', /* ... (ใส่ให้ครบเหมือนเดิม) ... */ '2026-12-31': 'วันสิ้นปี' };
-        const buddhistHolyDays = ['2025-01-06', '2025-01-13', /* ... (ใส่ให้ครบเหมือนเดิม) ... */ '2026-12-27'];
-        // --- (ใส่ list วันหยุดและวันพระให้ครบถ้วนเหมือนโค้ดเดิม) ---
+        // --- วันหยุดและวันพระ (ใส่ข้อมูลให้ครบถ้วน) ---
+        const thaiHolidays = {
+            '2025-01-01': 'วันขึ้นปีใหม่', '2025-02-12': 'วันมาฆบูชา', '2025-04-06': 'วันจักรี',
+            '2025-04-13': 'วันสงกรานต์', '2025-04-14': 'วันสงกรานต์', '2025-04-15': 'วันสงกรานต์',
+            '2025-05-01': 'วันแรงงานแห่งชาติ', '2025-05-04': 'วันฉัตรมงคล', '2025-05-10': 'วันวิสาขบูชา',
+            '2025-06-03': 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา', '2025-07-28': 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว',
+            '2025-08-08': 'วันอาสาฬหบูชา', '2025-08-09': 'วันเข้าพรรษา', '2025-08-12': 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์',
+            '2025-10-13': 'วันคล้ายวันสวรรคต ร.9', '2025-10-23': 'วันปิยมหาราช',
+            '2025-12-05': 'วันคล้ายวันพระราชสมภพ ร.9', '2025-12-10': 'วันรัฐธรรมนูญ', '2025-12-31': 'วันสิ้นปี',
+            '2026-01-01': 'วันขึ้นปีใหม่', '2026-03-04': 'วันมาฆบูชา', '2026-04-06': 'วันจักรี',
+            '2026-04-13': 'วันสงกรานต์', '2026-04-14': 'วันสงกรานต์', '2026-04-15': 'วันสงกรานต์',
+            '2026-05-01': 'วันแรงงานแห่งชาติ', '2026-05-04': 'วันฉัตรมงคล', '2026-05-30': 'วันวิสาขบูชา',
+            '2026-06-03': 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา', '2026-07-27': 'วันอาสาฬหบูชา',
+            '2026-07-28': 'วันเฉลิมพระชนมพรรษา ร.10', '2026-07-29': 'วันเข้าพรรษา',
+            '2026-08-12': 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์', '2026-10-13': 'วันคล้ายวันสวรรคต ร.9',
+            '2026-10-23': 'วันปิยมหาราช', '2026-12-05': 'วันคล้ายวันพระราชสมภพ ร.9',
+            '2026-12-10': 'วันรัฐธรรมนูญ', '2026-12-31': 'วันสิ้นปี'
+        };
+        const buddhistHolyDays = [
+            '2025-01-06', '2025-01-13', '2025-01-21', '2025-01-29', '2025-02-05', '2025-02-12', '2025-02-20', '2025-02-28',
+            '2025-03-07', '2025-03-14', '2025-03-22', '2025-03-30', '2025-04-06', '2025-04-13', '2025-04-21', '2025-04-29',
+            '2025-05-06', '2025-05-13', '2025-05-21', '2025-05-28', '2025-06-05', '2025-06-12', '2025-06-20', '2025-06-27',
+            '2025-07-05', '2025-07-12', '2025-07-19', '2025-07-27', '2025-08-03', '2025-08-10', '2025-08-18', '2025-08-25',
+            '2025-09-02', '2025-09-09', '2025-09-16', '2025-09-23', '2025-10-01', '2025-10-08', '2025-10-15', '2025-10-23',
+            '2025-10-30', '2025-11-06', '2025-11-13', '2025-11-21', '2025-11-28', '2025-12-06', '2025-12-13', '2025-12-21',
+            '2025-12-28', '2026-01-04', '2026-01-12', '2026-01-19', '2026-01-27', '2026-02-03', '2026-02-11', '2026-02-18',
+            '2026-02-26', '2026-03-06', '2026-03-13', '2026-03-21', '2026-03-28', '2026-04-05', '2026-04-12', '2026-04-20',
+            '2026-04-27', '2026-05-05', '2026-05-12', '2026-05-20', '2026-05-27', '2026-06-04', '2026-06-11', '2026-06-19',
+            '2026-06-26', '2026-07-04', '2026-07-11', '2026-07-18', '2026-07-26', '2026-08-02', '2026-08-09', '2026-08-17',
+            '2026-08-24', '2026-08-31', '2026-09-08', '2026-09-15', '2026-09-22', '2026-09-30', '2026-10-07', '2026-10-14',
+            '2026-10-22', '2026-10-29', '2026-11-05', '2026-11-12', '2026-11-20', '2026-11-27', '2026-12-05', '2026-12-12',
+            '2026-12-20', '2026-12-27'
+        ];
+        // --- จบส่วน วันหยุดและวันพระ ---
 
         // --- Function: Render Calendar ---
         function renderCalendar() {
@@ -146,21 +176,16 @@
                 calendarDaysEl.appendChild(dayDiv);
             }
 
-            // Next month days
+            // Next month days to fill grid rows properly
             const totalCells = calendarDaysEl.children.length;
-            const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells; // Fill current row
-            for (let day = 1; day <= remainingCells; day++) {
-                 const dayDiv = createDayElement(day, true, null); // Pass null for date obj
+            const remainingCells = (totalCells <= 35) ? (42 - totalCells) : (49 - totalCells); // Ensure 6 or 7 rows
+
+            let nextMonthDay = 1;
+            for (let i = 0; i < remainingCells; i++) {
+                 const dayDiv = createDayElement(nextMonthDay++, true, null); // Pass null for date obj
                  calendarDaysEl.appendChild(dayDiv);
             }
-             // Ensure 6 rows total if needed
-            const currentTotalCells = calendarDaysEl.children.length;
-            if (currentTotalCells < 42) {
-                 for (let day = remainingCells + 1; day <= remainingCells + 7; day++) {
-                     const dayDiv = createDayElement(day - remainingCells, true, null);
-                     calendarDaysEl.appendChild(dayDiv);
-                 }
-            }
+
 
             renderUpcomingEvents();
         }
@@ -191,12 +216,17 @@
                      }
                 }
 
-                // Add events
-                const dayEvents = getEventsForDateStr(dateStr);
+                // Add events ordered by time
+                const dayEvents = getEventsForDateStr(dateStr).sort(([, a], [, b]) => {
+                    const timeA = a.time || '99:99'; // Put events without time last
+                    const timeB = b.time || '99:99';
+                    return timeA.localeCompare(timeB);
+                });
                 dayEvents.forEach(([key, event]) => { // Get key and event data
                     const eventDiv = document.createElement('div');
                     eventDiv.className = 'event-item';
                     eventDiv.textContent = event.time ? `${event.time} ${event.title}` : event.title;
+                    eventDiv.title = `${event.title}${event.time ? ' ('+event.time+')': ''}${event.description ? ' - '+event.description : ''} (โดย ${event.author})`; // Tooltip
                     eventDiv.onclick = (e) => {
                         e.stopPropagation(); // Prevent day click when clicking event
                         showEventDetails(key, event);
@@ -214,13 +244,21 @@
                  dayDiv.onclick = null; // Disable click for other month days
             }
 
-            dayDiv.innerHTML = dayLabel + dayDiv.innerHTML; // Prepend dayLabel
+            // Use innerHTML carefully, place existing event divs after day label
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = dayLabel;
+            while(dayDiv.firstChild) {
+                tempContainer.appendChild(dayDiv.firstChild);
+            }
+            dayDiv.appendChild(tempContainer);
+
 
             return dayDiv;
         }
 
          // --- Function: Get Events for Date String ---
         function getEventsForDateStr(dateStr) {
+            // Returns an array of [key, eventObject] pairs
             return Object.entries(allEvents).filter(([key, event]) => event.date === dateStr);
         }
 
@@ -229,19 +267,29 @@
             const upcomingContainer = document.getElementById('upcoming-events');
             const today = new Date();
             today.setHours(0, 0, 0, 0); // Start of today
-            const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // End of 7 days from now
+            const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // End of 7 days from now (exclusive)
 
             const upcomingEvents = Object.entries(allEvents)
                 .map(([key, event]) => ({ key, ...event })) // Include the key
                 .filter(event => {
-                    const eventDate = new Date(event.date);
-                    eventDate.setHours(0,0,0,0); // Ensure comparison at day level
-                    return eventDate >= today && eventDate < nextWeek; // Check if within the next 7 days
+                    try {
+                        // Handle potential invalid date strings gracefully
+                        const eventDate = new Date(event.date + 'T00:00:00'); // Assume start of day if date is valid
+                        if (isNaN(eventDate)) return false; // Skip if date is invalid
+                        return eventDate >= today && eventDate < nextWeek; // Check if within the next 7 days
+                    } catch (e) {
+                        console.warn("Skipping event with potentially invalid date:", event);
+                        return false;
+                    }
                 })
                 .sort((a, b) => {
                      // Sort by date, then by time if available
-                     const dateA = new Date(a.date + (a.time ? `T${a.time}` : 'T00:00:00'));
-                     const dateB = new Date(b.date + (b.time ? `T${b.time}` : 'T00:00:00'));
+                     const dateA = new Date(a.date + (a.time ? `T${a.time}:00` : 'T00:00:00'));
+                     const dateB = new Date(b.date + (b.time ? `T${b.time}:00` : 'T00:00:00'));
+                     // Handle invalid dates during sort
+                     if (isNaN(dateA) && isNaN(dateB)) return 0;
+                     if (isNaN(dateA)) return 1;
+                     if (isNaN(dateB)) return -1;
                      return dateA - dateB;
                  });
 
@@ -251,20 +299,23 @@
             }
 
             upcomingContainer.innerHTML = upcomingEvents.map(event => {
-                const eventDate = new Date(event.date);
+                const eventDate = new Date(event.date + 'T00:00:00'); // Ensure it's treated as local date
                 const formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]}`;
-                 const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
                 let dateLabel = formattedDate;
                 if (eventDate.toDateString() === today.toDateString()) dateLabel = 'วันนี้';
                 else if (eventDate.toDateString() === tomorrow.toDateString()) dateLabel = 'พรุ่งนี้';
 
+                // Escape quotes in JSON string for onclick handler
+                const eventJsonString = JSON.stringify(event).replace(/"/g, '&quot;');
+
                 return `
-                    <div class="flex items-start justify-between p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${JSON.stringify(event).replace(/'/g, "\\'")})'>
-                        <div class="flex-1 mr-4">
-                            <div class="font-semibold text-gray-800">${event.title}</div>
+                    <div class="flex items-start justify-between p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
+                        <div class="flex-1 mr-4 overflow-hidden">
+                            <div class="font-semibold text-gray-800 truncate" title="${event.title}">${event.title}</div>
                             <div class="text-sm text-gray-600">${dateLabel}${event.time ? ` เวลา ${event.time}` : ''}</div>
-                            ${event.description ? `<div class="text-sm text-gray-500 mt-1">${event.description}</div>` : ''}
+                            ${event.description ? `<div class="text-sm text-gray-500 mt-1 truncate" title="${event.description}">${event.description}</div>` : ''}
                         </div>
                         <div class="text-xs text-gray-500 text-right whitespace-nowrap">โดย ${event.author}</div>
                     </div>
@@ -272,15 +323,21 @@
             }).join('');
         }
 
+
         // --- Modal Functions ---
         function showAddEventModal() { document.getElementById('add-event-modal').classList.add('show'); document.getElementById('event-title').focus(); }
         function hideAddEventModal() { document.getElementById('add-event-modal').classList.remove('show'); document.getElementById('add-event-form').reset(); }
         function showEventDetails(key, event) {
             selectedEventKey = key; // Store the key
             const content = document.getElementById('event-details-content');
-            const eventDate = new Date(event.date);
-            const formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]} ${eventDate.getFullYear() + 543}`;
-            content.innerHTML = `<div class="space-y-3"><div><span class="font-semibold text-gray-700">ชื่อกิจกรรม:</span> <p class="text-gray-800">${event.title}</p></div><div><span class="font-semibold text-gray-700">วันที่:</span> <p class="text-gray-800">${formattedDate}</p></div>${event.time ? `<div><span class="font-semibold text-gray-700">เวลา:</span> <p class="text-gray-800">${event.time}</p></div>` : ''}${event.description ? `<div><span class="font-semibold text-gray-700">รายละเอียด:</span> <p class="text-gray-800">${event.description}</p></div>` : ''}<div><span class="font-semibold text-gray-700">เพิ่มโดย:</span> <p class="text-gray-800">${event.author}</p></div></div>`;
+            // Ensure date is parsed correctly, assuming local timezone
+            const eventDate = new Date(event.date + 'T00:00:00');
+            let formattedDate = "Invalid Date";
+            if (!isNaN(eventDate)) {
+                 formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]} ${eventDate.getFullYear() + 543}`;
+            }
+
+            content.innerHTML = `<div class="space-y-3"><div><span class="font-semibold text-gray-700">ชื่อกิจกรรม:</span> <p class="text-gray-800 break-words">${event.title || '-'}</p></div><div><span class="font-semibold text-gray-700">วันที่:</span> <p class="text-gray-800">${formattedDate}</p></div>${event.time ? `<div><span class="font-semibold text-gray-700">เวลา:</span> <p class="text-gray-800">${event.time}</p></div>` : ''}${event.description ? `<div><span class="font-semibold text-gray-700">รายละเอียด:</span> <p class="text-gray-800 break-words">${event.description}</p></div>` : ''}<div><span class="font-semibold text-gray-700">เพิ่มโดย:</span> <p class="text-gray-800 break-words">${event.author || '-'}</p></div></div>`;
             document.getElementById('event-details-modal').classList.add('show');
         }
         function hideEventDetails() { document.getElementById('event-details-modal').classList.remove('show'); selectedEventKey = null; }
@@ -291,6 +348,19 @@
             saveBtn.textContent = 'กำลังบันทึก...'; saveBtn.disabled = true;
 
             try {
+                // Basic validation
+                if (!eventData.title || !eventData.date || !eventData.author) {
+                     throw new Error("Missing required fields: title, date, or author.");
+                }
+                // Validate date format (YYYY-MM-DD)
+                 if (!/^\d{4}-\d{2}-\d{2}$/.test(eventData.date)) {
+                    throw new Error("Invalid date format. Use YYYY-MM-DD.");
+                 }
+                 // Validate time format (HH:MM) if present
+                 if (eventData.time && !/^\d{2}:\d{2}$/.test(eventData.time)) {
+                     throw new Error("Invalid time format. Use HH:MM.");
+                 }
+
                 await eventsRef.push({
                     title: eventData.title,
                     date: eventData.date,
@@ -303,7 +373,7 @@
                 showMessage('เพิ่มกิจกรรมเรียบร้อยแล้ว', 'success');
             } catch (error) {
                 console.error("Error adding event:", error);
-                showMessage('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+                showMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
             } finally {
                  saveBtn.textContent = 'บันทึก'; saveBtn.disabled = false;
             }
@@ -331,14 +401,26 @@
         // --- Helper: Show Message ---
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-[1001] ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            messageDiv.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-[1001] shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`; // Position bottom-right
             messageDiv.textContent = message;
             document.body.appendChild(messageDiv);
-            setTimeout(() => { messageDiv.remove(); }, 3000);
+            setTimeout(() => {
+                messageDiv.style.opacity = '0'; // Fade out
+                messageDiv.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => messageDiv.remove(), 500); // Remove after fade
+             }, 3000);
         }
 
         // --- Event Listeners ---
-        document.getElementById('add-event-btn').onclick = showAddEventModal;
+        document.getElementById('add-event-btn').onclick = () => {
+             // Set default date to today if opening without clicking a day
+             const dateInput = document.getElementById('event-date');
+             if (!dateInput.value) {
+                 const today = new Date();
+                 dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+             }
+            showAddEventModal();
+        };
         document.getElementById('cancel-event-btn').onclick = hideAddEventModal;
         document.getElementById('close-details-btn').onclick = hideEventDetails;
         document.getElementById('delete-event-btn').onclick = deleteEventFromFirebase; // Changed to Firebase delete
@@ -365,8 +447,9 @@
             renderCalendar(); // Re-render the calendar with new data
         }, (error) => {
              console.error("Firebase read failed:", error);
-             document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูลปฏิทิน</div>';
-             document.getElementById('upcoming-events').innerHTML = '<div class="p-10 text-center text-red-600">เกิดข้อผิดพลาดในการโหลดกิจกรรม</div>';
+             document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดข้อมูลปฏิทิน กรุณาตรวจสอบการตั้งค่า Firebase และ Rules</div>';
+             document.getElementById('upcoming-events').innerHTML = '<div class="p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดกิจกรรม</div>';
+             showMessage('ไม่สามารถโหลดข้อมูลจาก Firebase ได้', 'error');
         });
 
     </script>
