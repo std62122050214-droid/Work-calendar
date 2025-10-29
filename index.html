@@ -13,7 +13,7 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
         .calendar-day { background-color: white; min-height: 120px; padding: 8px; position: relative; cursor: pointer; } /* Added cursor pointer */
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } /* Default cursor for other months */
-        .calendar-day.today { background-color: #dbeafe; }
+        .calendar-day.today { background-color: #a7f3d0; }
         .event-item { background-color: #3b82f6; color: white; padding: 2px 6px; margin: 2px 0; border-radius: 4px; font-size: 11px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; }
         .modal.show { display: flex; align-items: center; justify-content: center; }
@@ -28,7 +28,7 @@
 <body class="bg-gray-50">
     <div class="container mx-auto p-6 max-w-6xl">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">ปฏิทินกิจกรรม</h1>
+            <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">Work Calendar</h1>
             <div class="flex flex-wrap gap-4 items-center">
                 <button id="add-event-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"> เพิ่มกิจกรรมใหม่ </button>
                 <div class="flex items-center gap-2">
