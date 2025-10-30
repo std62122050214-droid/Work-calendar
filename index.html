@@ -11,13 +11,15 @@
         body { box-sizing: border-box; height: 100%; margin: 0; font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         html { height: 100%; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
+        
+        /* --- (ปรับแก้ Desktop) เพิ่มขนาดและความสูง --- */
         .calendar-day { 
             background-color: white; 
-            min-height: 120px; 
-            padding: 4px; /* Desktop Padding */
+            min-height: 150px; /* เพิ่มความสูงสำหรับ Desktop */
+            padding: 8px; 
             position: relative; 
             cursor: pointer;
-            font-size: 0.8rem; 
+            font-size: 1rem; /* เพิ่มขนาดฟอนต์หลัก */
         } 
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } 
         
@@ -34,24 +36,26 @@
             background-color: #fef9c3; 
             border-left: none; 
         }
+        
+        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์วันหยุด */
         .holiday-label {
-            font-size: 0.7rem; 
+            font-size: 0.9rem; /* 14.4px */
             font-weight: 500;
             margin-bottom: 2px;
             overflow: hidden;
-            max-height: 1.8em; 
+            max-height: 2em; 
             line-height: 1.2;
-            white-space: nowrap; /* ป้องกันการขึ้นบรรทัดใหม่ของอิโมจิและข้อความ */
+            white-space: nowrap; 
         }
 
-        /* Event Item */
+        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ Event */
         .event-item { 
             background-color: #3b82f6; 
             color: white; 
-            padding: 1px 4px; 
-            margin: 1px 0; 
+            padding: 2px 6px; 
+            margin: 2px 0; 
             border-radius: 4px; 
-            font-size: 0.65rem; 
+            font-size: 0.875rem; /* 14px */
             cursor: pointer; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -62,30 +66,32 @@
         .modal.show { display: flex; align-items: center; justify-content: center; }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s ease infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .day-number { pointer-events: none; font-size: 1rem; }
+        
+        /* (ปรับแก้ Desktop) เพิ่มขนาดเลขวันที่ */
+        .day-number { pointer-events: none; font-size: 1.25rem; /* 20px */ }
 
         /* Day Name visibility */
         .day-name-full { display: block; }
         .day-name-short { display: none; }
 
-        /* --- (REQ 1) Text Hiding for Mobile --- */
-        .desktop-text { display: inline; /* แสดงข้อความปกติบน Desktop */ }
+        /* (Mobile) ซ่อนข้อความบน Desktop */
+        .desktop-text { display: inline; }
 
-        /* --- Responsive Adjustments for Mobile (<= 768px) --- */
+        /* --- (คงเดิม) Responsive Adjustments for Mobile (<= 768px) --- */
         @media (max-width: 768px) {
             .container { padding: 4px; }
             .calendar-day { 
-                min-height: 90px; /* **REQ 3: ลดความสูงช่องวัน** */
+                min-height: 90px; /* **(Mobile) ลดความสูงช่องวัน** */
                 padding: 2px;
             }
             .day-number { font-size: 0.8rem; }
-            .holiday-label { font-size: 0.7rem; max-height: 1.5em; }
+            .holiday-label { font-size: 0.6rem; max-height: 1.5em; }
             .event-item { font-size: 0.7rem; padding: 1px 2px; margin: 1px 0; } 
 
-            /* **REQ 1: ซ่อนข้อความ แสดงเฉพาะอิโมจิ บนมือถือ** */
+            /* **(Mobile) ซ่อนข้อความ แสดงเฉพาะอิโมจิ** */
             .desktop-text { display: none; }
 
-            /* **REQ: ลดขนาดส่วนหัว** */
+            /* **(Mobile) ลดขนาดส่วนหัว** */
             #calendar-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
             .header-controls { 
                 flex-direction: column; 
@@ -107,14 +113,13 @@
             }
             .legend-container { justify-content: center; }
 
-            /* **REQ: ย่อชื่อวัน** */
+            /* **(Mobile) ย่อชื่อวัน** */
             .day-name-full { display: none !important; }
             .day-name-short { display: block !important; }
         }
 
-        /* --- (REQ 4) Responsive Adjustments for Desktop (>= 1024px) --- */
+        /* --- (คงเดิม Desktop) ขยายเต็มจอ --- */
         @media (min-width: 1024px) {
-            /* ขยาย .container ให้เต็มความกว้างหน้าจอ */
             .container.mx-auto {
                 max-width: 100%;
                 padding-left: 2rem;
@@ -242,8 +247,7 @@
 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-        // --- Holiday Data (2568 - 2575) - FULL VERSION ---
-        // (นี่คือข้อมูลฉบับเต็มที่รวมปี 2569-2575)
+        // --- (FIXED) Holiday Data (2568 - 2575) - FULL VERSION ---
         const thaiHolidays = {
             // 2568 (2025)
             '2025-01-01': 'ปีใหม่', '2025-02-12': 'มาฆบูชา', '2025-04-06': 'วันจักรี', '2025-04-07': 'ชดเชยจักรี',
@@ -311,7 +315,7 @@
             '2032-12-06': 'วันพ่อ/ร.9 (ชดเชย)', '2032-12-10': 'รัฐธรรมนูญ', '2033-01-03': 'ปีใหม่ (ชดเชย)'
         };
         
-        // --- วันพระ (2568 - 2575) - FULL VERSION ---
+        // --- (FIXED) วันพระ (2568 - 2575) - FULL VERSION ---
         const buddhistHolyDays = [
             '2025-01-06', '2025-01-13', '2025-01-21', '2025-01-29', '2025-02-05', '2025-02-12', '2025-02-20', '2025-02-28',
             '2025-03-07', '2025-03-14', '2025-03-22', '2025-03-30', '2025-04-06', '2025-04-13', '2025-04-21', '2025-04-29',
@@ -536,6 +540,7 @@
                         const isUpcoming = eventDate >= today && eventDate < nextWeek;
                         if (!isUpcoming) return false;
 
+                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
@@ -571,12 +576,12 @@
                 return `
                     <div class="flex items-start justify-between p-3 ${bgColor} rounded-lg border-l-4 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
                         <div class="flex-1 mr-4 overflow-hidden">
-                            <div class="font-semibold text-gray-800 truncate" title="${event.title}">${event.title}</div>
-                            <div class="text-xs text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
+                            <div class="font-semibold text-sm lg:text-base text-gray-800 truncate" title="${event.title}">${event.title}</div>
+                            <div class="text-xs lg:text-sm text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <div class="text-sm font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
-                            <div class="text-xs text-gray-500">${dateLabel}</div>
+                            <div class="text-sm lg:text-base font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
+                            <div class="text-xs lg:text-sm text-gray-500">${dateLabel}</div>
                         </div>
                     </div>
                 `;
@@ -603,6 +608,7 @@
                         const isCurrentMonth = eventDate.getFullYear() === currentYear && eventDate.getMonth() === currentMonth;
                         if (!isCurrentMonth) return false;
 
+                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
@@ -632,12 +638,12 @@
                 return `
                     <div class="flex items-start justify-between p-3 ${bgColor} rounded-lg border-l-4 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
                         <div class="flex-1 mr-4 overflow-hidden">
-                            <div class="font-semibold text-gray-800 truncate" title="${event.title}">${event.title}</div>
-                            <div class="text-xs text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
+                            <div class="font-semibold text-sm lg:text-base text-gray-800 truncate" title="${event.title}">${event.title}</div>
+                            <div class="text-xs lg:text-sm text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <div class="text-sm font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
-                            <div class="text-xs text-gray-500">${formattedDate}</div>
+                            <div class="text-sm lg:text-base font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
+                            <div class="text-xs lg:text-sm text-gray-500">${formattedDate}</div>
                         </div>
                     </div>
                 `;
