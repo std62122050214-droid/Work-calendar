@@ -41,6 +41,7 @@
             overflow: hidden;
             max-height: 1.8em; 
             line-height: 1.2;
+            white-space: nowrap; /* ป้องกันการขึ้นบรรทัดใหม่ของอิโมจิและข้อความ */
         }
 
         /* Event Item */
@@ -67,42 +68,58 @@
         .day-name-full { display: block; }
         .day-name-short { display: none; }
 
+        /* --- (REQ 1) Text Hiding for Mobile --- */
+        .desktop-text { display: inline; /* แสดงข้อความปกติบน Desktop */ }
+
         /* --- Responsive Adjustments for Mobile (<= 768px) --- */
         @media (max-width: 768px) {
             .container { padding: 4px; }
             .calendar-day { 
-                min-height: 90px; /* **REQ 2: ลดความสูงช่องวัน** */
+                min-height: 90px; /* **REQ 3: ลดความสูงช่องวัน** */
                 padding: 2px;
             }
             .day-number { font-size: 0.8rem; }
-            .holiday-label { font-size: 0.6rem; max-height: 1.5em; }
-            .event-item { font-size: 0.6rem; padding: 0 2px; margin: 0; }
+            .holiday-label { font-size: 0.7rem; max-height: 1.5em; }
+            .event-item { font-size: 0.7rem; padding: 1px 2px; margin: 1px 0; } 
 
-            /* **REQ 1: ลดขนาดส่วนหัว** */
+            /* **REQ 1: ซ่อนข้อความ แสดงเฉพาะอิโมจิ บนมือถือ** */
+            .desktop-text { display: none; }
+
+            /* **REQ: ลดขนาดส่วนหัว** */
             #calendar-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
             .header-controls { 
-                flex-direction: column; /* Stack controls on mobile */
+                flex-direction: column; 
                 gap: 8px; 
             }
-            .month-navigation { order: 1; /* Month nav on top */ }
+            .month-navigation { order: 1; }
             #add-event-btn { 
-                order: 2; /* Add event button below */
+                order: 2; 
                 padding: 6px 10px; 
-                font-size: 0.8rem; /* Small text */
+                font-size: 0.8rem; 
             }
             #prev-month, #next-month { 
                 padding: 6px 8px; 
-                font-size: 0.8rem; /* Small text */
+                font-size: 0.8rem; 
             }
             #current-month { 
-                font-size: 1.1rem; /* Small text */
+                font-size: 1.1rem; 
                 padding: 0 8px;
             }
             .legend-container { justify-content: center; }
 
-            /* **REQ 1: ย่อชื่อวัน** */
+            /* **REQ: ย่อชื่อวัน** */
             .day-name-full { display: none !important; }
             .day-name-short { display: block !important; }
+        }
+
+        /* --- (REQ 4) Responsive Adjustments for Desktop (>= 1024px) --- */
+        @media (min-width: 1024px) {
+            /* ขยาย .container ให้เต็มความกว้างหน้าจอ */
+            .container.mx-auto {
+                max-width: 100%;
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -226,6 +243,7 @@
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
         // --- Holiday Data (2568 - 2575) - FULL VERSION ---
+        // (นี่คือข้อมูลฉบับเต็มที่รวมปี 2569-2575)
         const thaiHolidays = {
             // 2568 (2025)
             '2025-01-01': 'ปีใหม่', '2025-02-12': 'มาฆบูชา', '2025-04-06': 'วันจักรี', '2025-04-07': 'ชดเชยจักรี',
@@ -355,7 +373,7 @@
         
         // --- Helper Functions ---
 
-        // Helper function to check if an event is a *predefined* or *custom* holiday
+        // (REQ 3) Helper function to check if an event is a *predefined* or *custom* holiday
         function isExcludedEvent(event) {
             const eventTitle = event.title || '';
             
@@ -428,6 +446,7 @@
             renderMonthlySummary();
         }
 
+        // (REQ 1) Modified function to wrap text in <span>
         function createDayElement(day, isOtherMonth, dateObj) {
             const dayDiv = document.createElement('div');
             dayDiv.className = `calendar-day ${isOtherMonth ? 'other-month' : ''}`;
@@ -440,20 +459,21 @@
                 const dayEvents = getEventsForDateStr(dateStr);
                 const isCustomHoliday = isCustomCompanyHoliday(dayEvents); 
 
-                // --- Holiday Priority Check ---
+                // --- Holiday Priority Check (with spans) ---
                 if (isCustomHoliday) {
                     dayDiv.classList.add('company-holiday');
                     const holidayEvent = dayEvents.find(([key, event]) => event.title && event.title.includes('🔴 วันหยุดบริษัทฯ'));
-                    dayLabel += `<div class="text-red-700 holiday-label pointer-events-none">${holidayEvent ? holidayEvent[1].title : '🔴 วันหยุดบริษัทฯ'}</div>`;
+                    const title = holidayEvent ? holidayEvent[1].title.replace('🔴 ', '') : 'วันหยุดบริษัทฯ';
+                    dayLabel += `<div class="text-red-700 holiday-label pointer-events-none">🔴 <span class="desktop-text">${title}</span></div>`;
                 
                 } else if (thaiHolidays[dateStr]) {
                     dayDiv.classList.add('public-holiday');
                     const holidayName = thaiHolidays[dateStr];
-                    dayLabel += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ ${holidayName}</div>`;
+                    dayLabel += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ <span class="desktop-text">${holidayName}</span></div>`;
                 
                 } else if (buddhistHolyDays.includes(dateStr)) {
                     dayDiv.classList.add('buddhist-day');
-                    dayLabel += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 วันพระ</div>`;
+                    dayLabel += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 <span class="desktop-text">วันพระ</span></div>`;
                 }
                 // --- End Holiday Check ---
                 
@@ -461,17 +481,14 @@
                 const eventsToDisplay = dayEvents.sort(([, a], [, b]) => (a.time || '99:99').localeCompare(b.time || '99:99'));
                 
                 eventsToDisplay.forEach(([key, event]) => { 
-                    // Don't show the holiday tag itself as a blue event item
-                    if (event.title && (
-                        event.title.includes('🔴 วันหยุดบริษัทฯ') ||
-                        event.title.includes('🏛️ วันหยุดราชการ') ||
-                        event.title.includes('🙏 วันพระ'))) {
-                        return; // Skip rendering this as an event item
+                    if (isExcludedEvent(event)) {
+                        return; // Skip rendering holiday tags as blue event items
                     }
 
                     const eventDiv = document.createElement('div');
                     eventDiv.className = 'event-item';
-                    eventDiv.textContent = event.time ? `${event.time} ${event.title}` : event.title;
+                    // (REQ 1) Add span for responsive text
+                    eventDiv.innerHTML = `🔵 <span class="desktop-text">${event.time ? `${event.time} ` : ''}${event.title}</span>`; 
                     eventDiv.title = `${event.title} (โดย ${event.author})`; 
                     eventDiv.onclick = (e) => {
                         e.stopPropagation(); 
@@ -502,6 +519,7 @@
         }
 
         // --- Function: Render Upcoming Events (Filtered) ---
+        // (REQ 3: Filtered holidays)
         function renderUpcomingEvents() {
             const upcomingContainer = document.getElementById('upcoming-events');
             const today = new Date();
@@ -518,7 +536,6 @@
                         const isUpcoming = eventDate >= today && eventDate < nextWeek;
                         if (!isUpcoming) return false;
 
-                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
@@ -567,6 +584,7 @@
         }
         
         // --- Function: Render Monthly Summary (Filtered) ---
+        // (REQ 3: Filtered holidays)
         function renderMonthlySummary() {
             const summaryContainer = document.getElementById('monthly-summary-events');
             const titleEl = document.getElementById('monthly-summary-title');
@@ -585,7 +603,6 @@
                         const isCurrentMonth = eventDate.getFullYear() === currentYear && eventDate.getMonth() === currentMonth;
                         if (!isCurrentMonth) return false;
 
-                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
