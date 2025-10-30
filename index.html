@@ -14,14 +14,14 @@
         .calendar-day { 
             background-color: white; 
             min-height: 120px; 
-            padding: 4px; /* ลด padding */
+            padding: 4px; /* Desktop Padding */
             position: relative; 
             cursor: pointer;
-            font-size: 0.8rem; /* ลดขนาดตัวอักษรหลักในช่องวัน */
+            font-size: 0.8rem; 
         } 
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } 
         
-        /* --- สีวันหยุดที่กำหนดเอง --- */
+        /* --- Holiday Colors --- */
         .calendar-day.company-holiday {
             background-color: #fee2e2 !important; 
             border-left: none; 
@@ -34,24 +34,23 @@
             background-color: #fef9c3; 
             border-left: none; 
         }
-        /* จำกัดความสูงของข้อความวันหยุดราชการ/วันพระ ในช่องปฏิทิน */
         .holiday-label {
-            font-size: 0.7rem; /* ลดขนาดตัวอักษรของข้อความวันหยุด */
+            font-size: 0.7rem; 
             font-weight: 500;
             margin-bottom: 2px;
             overflow: hidden;
-            max-height: 1.8em; /* จำกัดให้แสดงได้ประมาณ 2 บรรทัด */
+            max-height: 1.8em; 
             line-height: 1.2;
         }
 
-        /* ปรับขนาดตัวอักษร Event Item */
+        /* Event Item */
         .event-item { 
             background-color: #3b82f6; 
             color: white; 
-            padding: 1px 4px; /* ลด padding */
-            margin: 1px 0; /* ลด margin */
+            padding: 1px 4px; 
+            margin: 1px 0; 
             border-radius: 4px; 
-            font-size: 0.65rem; /* ลดขนาดตัวอักษร */
+            font-size: 0.65rem; 
             cursor: pointer; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -63,6 +62,48 @@
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s ease infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .day-number { pointer-events: none; font-size: 1rem; }
+
+        /* Day Name visibility */
+        .day-name-full { display: block; }
+        .day-name-short { display: none; }
+
+        /* --- Responsive Adjustments for Mobile (<= 768px) --- */
+        @media (max-width: 768px) {
+            .container { padding: 4px; }
+            .calendar-day { 
+                min-height: 90px; /* **REQ 2: ลดความสูงช่องวัน** */
+                padding: 2px;
+            }
+            .day-number { font-size: 0.8rem; }
+            .holiday-label { font-size: 0.6rem; max-height: 1.5em; }
+            .event-item { font-size: 0.6rem; padding: 0 2px; margin: 0; }
+
+            /* **REQ 1: ลดขนาดส่วนหัว** */
+            #calendar-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
+            .header-controls { 
+                flex-direction: column; /* Stack controls on mobile */
+                gap: 8px; 
+            }
+            .month-navigation { order: 1; /* Month nav on top */ }
+            #add-event-btn { 
+                order: 2; /* Add event button below */
+                padding: 6px 10px; 
+                font-size: 0.8rem; /* Small text */
+            }
+            #prev-month, #next-month { 
+                padding: 6px 8px; 
+                font-size: 0.8rem; /* Small text */
+            }
+            #current-month { 
+                font-size: 1.1rem; /* Small text */
+                padding: 0 8px;
+            }
+            .legend-container { justify-content: center; }
+
+            /* **REQ 1: ย่อชื่อวัน** */
+            .day-name-full { display: none !important; }
+            .day-name-short { display: block !important; }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -70,14 +111,14 @@
     <div class="container mx-auto p-6 max-w-6xl">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">Calendar Planner GLTH:AD👩‍💻</h1>
-            <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex flex-wrap gap-4 items-center header-controls">
                 <button id="add-event-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"> เพิ่มกิจกรรมใหม่ </button>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 month-navigation">
                     <button id="prev-month" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"> ← เดือนก่อน </button>
                     <span id="current-month" class="text-xl font-semibold text-gray-700 px-4 w-48 text-center"></span> <button id="next-month" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"> เดือนถัดไป → </button>
                 </div>
             </div>
-            <div class="mt-4 flex flex-wrap gap-4 text-sm">
+            <div class="mt-4 flex flex-wrap gap-4 text-sm legend-container">
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 bg-red-100 rounded"></div>
                     <span class="text-gray-600">🔴 วันหยุดบริษัทฯ</span>
@@ -101,8 +142,21 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="calendar-grid bg-gray-100 text-center font-semibold text-gray-700">
-                <div class="p-4">อาทิตย์</div> <div class="p-4">จันทร์</div> <div class="p-4">อังคาร</div> <div class="p-4">พุธ</div> <div class="p-4">พฤหัสบดี</div> <div class="p-4">ศุกร์</div> <div class="p-4">เสาร์</div>
+             <div class="calendar-grid bg-gray-100 text-center font-semibold text-gray-700">
+                <div class="p-4 day-name-full">อาทิตย์</div>
+                <div class="p-4 day-name-full">จันทร์</div>
+                <div class="p-4 day-name-full">อังคาร</div>
+                <div class="p-4 day-name-full">พุธ</div>
+                <div class="p-4 day-name-full">พฤหัสบดี</div>
+                <div class="p-4 day-name-full">ศุกร์</div>
+                <div class="p-4 day-name-full">เสาร์</div>
+                <div class="p-2 day-name-short">อา</div>
+                <div class="p-2 day-name-short">จ</div>
+                <div class="p-2 day-name-short">อ</div>
+                <div class="p-2 day-name-short">พ</div>
+                <div class="p-2 day-name-short">พฤ</div>
+                <div class="p-2 day-name-short">ศ</div>
+                <div class="p-2 day-name-short">ส</div>
             </div>
             <div id="calendar-days" class="calendar-grid">
                 <div class="col-span-7 p-10 text-center text-gray-500">
@@ -171,7 +225,7 @@
 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-        // --- วันหยุดราชการไทย (2568 - 2575) และการย่อชื่อ ---
+        // --- Holiday Data (2568 - 2575) - FULL VERSION ---
         const thaiHolidays = {
             // 2568 (2025)
             '2025-01-01': 'ปีใหม่', '2025-02-12': 'มาฆบูชา', '2025-04-06': 'วันจักรี', '2025-04-07': 'ชดเชยจักรี',
@@ -204,10 +258,10 @@
             '2028-05-04': 'ฉัตรมงคล', '2028-05-08': 'วิสาขบูชา (ชดเชย)', '2028-06-05': 'เฉลิมพระชนมพรรษาฯ (ชดเชย)', 
             '2028-07-28': 'เฉลิมพระชนมพรรษา ร.10', '2028-08-11': 'วันแม่/พันปีหลวง (ชดเชย)', 
             '2028-10-13': 'สวรรคต ร.9', '2028-10-23': 'ปิยมหาราช',
-            '2028-12-05': 'วันพ่อ/ร.9', '2028-12-11': 'รัฐธรรมนูญ (ชดเชย)', '2029-01-01': 'ปีใหม่',
+            '2028-12-05': 'วันพ่อ/ร.9', '2028-12-11': 'รัฐธรรมนูญ (ชดเชย)',
             
             // 2572 (2029)
-            '2029-01-02': 'ชดเชยปีใหม่', '2029-02-28': 'มาฆบูชา', '2029-04-06': 'วันจักรี',
+            '2029-01-01': 'ปีใหม่', '2029-01-02': 'ชดเชยปีใหม่', '2029-02-28': 'มาฆบูชา', '2029-04-06': 'วันจักรี',
             '2029-04-13': 'สงกรานต์', '2029-04-16': 'สงกรานต์ (ชดเชย)', '2029-04-17': 'สงกรานต์ (ชดเชย)', '2029-05-01': 'แรงงาน',
             '2029-05-07': 'ฉัตรมงคล (ชดเชย)', '2029-05-28': 'วิสาขบูชา (ชดเชย)', '2029-06-04': 'เฉลิมพระชนมพรรษาฯ (ชดเชย)', 
             '2029-07-28': 'เฉลิมพระชนมพรรษา ร.10', '2029-08-13': 'วันแม่/พันปีหลวง (ชดเชย)', 
@@ -236,10 +290,10 @@
             '2032-05-04': 'ฉัตรมงคล', '2032-05-17': 'วิสาขบูชา (ชดเชย)', '2032-06-03': 'เฉลิมพระชนมพรรษา สุทิดา', 
             '2032-07-28': 'เฉลิมพระชนมพรรษา ร.10', '2032-08-12': 'วันแม่/พันปีหลวง', 
             '2032-10-13': 'สวรรคต ร.9', '2032-10-25': 'ปิยมหาราช (ชดเชย)',
-            '2032-12-06': 'วันพ่อ/ร.9 (ชดเชย)', '2032-12-10': 'รัฐธรรมนูญ', '2033-01-03': 'ปีใหม่ (ชดเชย)',
+            '2032-12-06': 'วันพ่อ/ร.9 (ชดเชย)', '2032-12-10': 'รัฐธรรมนูญ', '2033-01-03': 'ปีใหม่ (ชดเชย)'
         };
         
-        // --- วันพระ (2568 - 2575) (ข้อมูลเดิม) ---
+        // --- วันพระ (2568 - 2575) - FULL VERSION ---
         const buddhistHolyDays = [
             '2025-01-06', '2025-01-13', '2025-01-21', '2025-01-29', '2025-02-05', '2025-02-12', '2025-02-20', '2025-02-28',
             '2025-03-07', '2025-03-14', '2025-03-22', '2025-03-30', '2025-04-06', '2025-04-13', '2025-04-21', '2025-04-29',
@@ -299,7 +353,27 @@
             '2032-12-25'
         ];
         
-        // Helper function to check if an event is a custom company holiday
+        // --- Helper Functions ---
+
+        // Helper function to check if an event is a *predefined* or *custom* holiday
+        function isExcludedEvent(event) {
+            const eventTitle = event.title || '';
+            
+            // 1. Check custom holiday tags (user-created)
+            if (eventTitle.includes('🔴 วันหยุดบริษัทฯ') ||
+                eventTitle.includes('🏛️ วันหยุดราชการ') ||
+                eventTitle.includes('🙏 วันพระ')) {
+                return true;
+            }
+            
+            // 2. Check hardcoded holiday lists by date
+            if (thaiHolidays[event.date] || buddhistHolyDays.includes(event.date)) {
+                return true;
+            }
+            
+            return false;
+        }
+
         function isCustomCompanyHoliday(events) {
             return events.some(([key, event]) => 
                 event.title && event.title.includes('🔴 วันหยุดบริษัทฯ')
@@ -310,8 +384,8 @@
             return Object.entries(allEvents).filter(([key, event]) => event.date === dateStr);
         }
 
+        // --- Main Render Functions ---
 
-        // --- Function: Render Calendar ---
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -349,12 +423,11 @@
                 calendarDaysEl.appendChild(dayDiv);
             }
 
-            // Call new summary functions
+            // Call summary functions
             renderUpcomingEvents();
             renderMonthlySummary();
         }
 
-        // --- Function: Create Day Element (ไม่เปลี่ยนแปลง) ---
         function createDayElement(day, isOtherMonth, dateObj) {
             const dayDiv = document.createElement('div');
             dayDiv.className = `calendar-day ${isOtherMonth ? 'other-month' : ''}`;
@@ -367,55 +440,44 @@
                 const dayEvents = getEventsForDateStr(dateStr);
                 const isCustomHoliday = isCustomCompanyHoliday(dayEvents); 
 
-                // --- ตรวจสอบวันหยุดตามลำดับความสำคัญ ---
+                // --- Holiday Priority Check ---
                 if (isCustomHoliday) {
-                    // 1. วันหยุดบริษัท (กำหนดเอง)
                     dayDiv.classList.add('company-holiday');
                     const holidayEvent = dayEvents.find(([key, event]) => event.title && event.title.includes('🔴 วันหยุดบริษัทฯ'));
-                    // ใช้ class 'holiday-label' สำหรับการควบคุมขนาดตัวอักษรและความสูง
                     dayLabel += `<div class="text-red-700 holiday-label pointer-events-none">${holidayEvent ? holidayEvent[1].title : '🔴 วันหยุดบริษัทฯ'}</div>`;
                 
                 } else if (thaiHolidays[dateStr]) {
-                    // 2. วันหยุดราชการ (ชื่อย่อ)
                     dayDiv.classList.add('public-holiday');
                     const holidayName = thaiHolidays[dateStr];
-                    // ใช้ class 'holiday-label' สำหรับการควบคุมขนาดตัวอักษรและความสูง
                     dayLabel += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ ${holidayName}</div>`;
                 
                 } else if (buddhistHolyDays.includes(dateStr)) {
-                    // 3. วันพระ
                     dayDiv.classList.add('buddhist-day');
-                     // ใช้ class 'holiday-label' สำหรับการควบคุมขนาดตัวอักษรและความสูง
                     dayLabel += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 วันพระ</div>`;
                 }
-                // --- จบส่วนตรวจสอบวันหยุด ---
+                // --- End Holiday Check ---
                 
-                // Add events ordered by time
-                const eventsToDisplay = dayEvents.sort(([, a], [, b]) => {
-                    const timeA = a.time || '99:99'; 
-                    const timeB = b.time || '99:99';
-                    return timeA.localeCompare(timeB);
-                });
+                // Add events (sorted)
+                const eventsToDisplay = dayEvents.sort(([, a], [, b]) => (a.time || '99:99').localeCompare(b.time || '99:99'));
                 
                 eventsToDisplay.forEach(([key, event]) => { 
-                    // Filter out duplicate holiday labels if multiple events exist (or just the holiday itself)
-                    const isHolidayEventTitle = event.title && (
+                    // Don't show the holiday tag itself as a blue event item
+                    if (event.title && (
                         event.title.includes('🔴 วันหยุดบริษัทฯ') ||
                         event.title.includes('🏛️ วันหยุดราชการ') ||
-                        event.title.includes('🙏 วันพระ')
-                    );
-                    
-                    if (!isHolidayEventTitle || eventsToDisplay.length > 1) {
-                         const eventDiv = document.createElement('div');
-                         eventDiv.className = 'event-item';
-                         eventDiv.textContent = event.time ? `${event.time} ${event.title}` : event.title;
-                         eventDiv.title = `${event.title}${event.time ? ' ('+event.time+')': ''}${event.description ? ' - '+event.description : ''} (โดย ${event.author})`; 
-                         eventDiv.onclick = (e) => {
-                             e.stopPropagation(); 
-                             showEventDetails(key, event);
-                         };
-                         dayDiv.appendChild(eventDiv);
+                        event.title.includes('🙏 วันพระ'))) {
+                        return; // Skip rendering this as an event item
                     }
+
+                    const eventDiv = document.createElement('div');
+                    eventDiv.className = 'event-item';
+                    eventDiv.textContent = event.time ? `${event.time} ${event.title}` : event.title;
+                    eventDiv.title = `${event.title} (โดย ${event.author})`; 
+                    eventDiv.onclick = (e) => {
+                        e.stopPropagation(); 
+                        showEventDetails(key, event);
+                    };
+                    dayDiv.appendChild(eventDiv);
                 });
 
                 // Click on day to add event
@@ -439,7 +501,7 @@
             return dayDiv;
         }
 
-        // --- Function: Render Upcoming Events (New Filter) ---
+        // --- Function: Render Upcoming Events (Filtered) ---
         function renderUpcomingEvents() {
             const upcomingContainer = document.getElementById('upcoming-events');
             const today = new Date();
@@ -453,38 +515,27 @@
                         const eventDate = new Date(event.date + 'T00:00:00'); 
                         if (isNaN(eventDate)) return false; 
                         
-                        // 1. Check date range
                         const isUpcoming = eventDate >= today && eventDate < nextWeek;
                         if (!isUpcoming) return false;
 
-                        // 2. Exclude holiday events based on title
-                        const eventTitle = event.title || '';
-                        const isExcludedHoliday = eventTitle.includes('🔴 วันหยุดบริษัทฯ') || 
-                                                  eventTitle.includes('🏛️ วันหยุดราชการ') || 
-                                                  eventTitle.includes('🙏 วันพระ') ||
-                                                  eventTitle.includes('วันหยุดราชการ'); 
-
-                        if (isExcludedHoliday) {
+                        // **REQ 3: Filter holidays**
+                        if (isExcludedEvent(event)) {
                             return false;
                         }
                         
                         return true;
-                    } catch (e) {
-                        console.warn("Skipping event with potentially invalid date:", event);
-                        return false;
-                    }
+                    } catch (e) { return false; }
                 })
                 .sort((a, b) => {
                     const timeA = a.time ? `T${a.time}:00` : 'T00:00:00';
                     const timeB = b.time ? `T${b.time}:00` : 'T00:00:00';
                     const dateA = new Date(a.date + timeA);
                     const dateB = new Date(b.date + timeB);
-                    
                     return dateA - dateB;
                 });
 
             if (upcomingEvents.length === 0) {
-                upcomingContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีกิจกรรมอื่น ๆ ที่จะมาถึงใน 7 วันข้างหน้า</p>';
+                upcomingContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีกิจกรรม (ไม่รวมวันหยุด) ใน 7 วันข้างหน้า</p>';
                 return;
             }
 
@@ -498,207 +549,185 @@
                 else if (eventDate.toDateString() === tomorrow.toDateString()) dateLabel = 'พรุ่งนี้';
 
                 const eventJsonString = JSON.stringify(event).replace(/"/g, '&quot;');
-                
-                // Use generic blue styling since holidays are filtered out
                 const bgColor = 'bg-blue-50 border-blue-500';
 
                 return `
                     <div class="flex items-start justify-between p-3 ${bgColor} rounded-lg border-l-4 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
                         <div class="flex-1 mr-4 overflow-hidden">
                             <div class="font-semibold text-gray-800 truncate" title="${event.title}">${event.title}</div>
-                            <div class="text-sm text-gray-600">${dateLabel}${event.time ? ` เวลา ${event.time}` : ''}</div>
-                            ${event.description ? `<div class="text-sm text-gray-500 mt-1 truncate" title="${event.description}">${event.description}</div>` : ''}
+                            <div class="text-xs text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
                         </div>
-                        <div class="text-xs text-gray-500 text-right whitespace-nowrap">โดย ${event.author}</div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-sm font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
+                            <div class="text-xs text-gray-500">${dateLabel}</div>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
-
-        // --- Function: Render Monthly Summary (New Function) ---
+        
+        // --- Function: Render Monthly Summary (Filtered) ---
         function renderMonthlySummary() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const currentMonthName = thaiMonths[month];
-
-            document.getElementById('monthly-summary-title').textContent = `สรุปกิจกรรมเดือน ${currentMonthName} ${year + 543} `;
             const summaryContainer = document.getElementById('monthly-summary-events');
+            const titleEl = document.getElementById('monthly-summary-title');
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
 
-            const monthlyEvents = Object.entries(allEvents)
+            titleEl.textContent = `สรุปกิจกรรมเดือน ${thaiMonths[currentMonth]} ${currentYear + 543}`;
+
+            const monthEvents = Object.entries(allEvents)
                 .map(([key, event]) => ({ key, ...event }))
                 .filter(event => {
-                    // 1. Filter by current month
-                    const eventDate = new Date(event.date + 'T00:00:00'); 
-                    if (isNaN(eventDate) || eventDate.getFullYear() !== year || eventDate.getMonth() !== month) {
-                        return false;
-                    }
+                    try {
+                        const eventDate = new Date(event.date + 'T00:00:00');
+                        if (isNaN(eventDate)) return false;
 
-                    // 2. Exclude holiday events based on title
-                    const eventTitle = event.title || '';
-                    const isExcludedHoliday = eventTitle.includes('🔴 วันหยุดบริษัทฯ') || 
-                                              eventTitle.includes('🏛️ วันหยุดราชการ') || 
-                                              eventTitle.includes('🙏 วันพระ') ||
-                                              eventTitle.includes('วันหยุดราชการ'); 
+                        const isCurrentMonth = eventDate.getFullYear() === currentYear && eventDate.getMonth() === currentMonth;
+                        if (!isCurrentMonth) return false;
 
-                    if (isExcludedHoliday) {
-                        return false;
-                    }
-                    
-                    return true;
+                        // **REQ 3: Filter holidays**
+                        if (isExcludedEvent(event)) {
+                            return false;
+                        }
+
+                        return true;
+                    } catch (e) { return false; }
                 })
                 .sort((a, b) => {
-                    // Sort by date and then time
                     const timeA = a.time ? `T${a.time}:00` : 'T00:00:00';
                     const timeB = b.time ? `T${b.time}:00` : 'T00:00:00';
                     const dateA = new Date(a.date + timeA);
                     const dateB = new Date(b.date + timeB);
-                    
                     return dateA - dateB;
                 });
 
-            if (monthlyEvents.length === 0) {
-                summaryContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีกิจกรรมอื่น ๆ ในเดือนนี้</p>';
+            if (monthEvents.length === 0) {
+                summaryContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีกิจกรรม (ไม่รวมวันหยุด) ในเดือนนี้</p>';
                 return;
             }
 
-            summaryContainer.innerHTML = monthlyEvents.map(event => {
-                const eventDate = new Date(event.date + 'T00:00:00'); 
+            summaryContainer.innerHTML = monthEvents.map(event => {
+                const eventDate = new Date(event.date + 'T00:00:00');
                 const formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]}`;
-                
                 const eventJsonString = JSON.stringify(event).replace(/"/g, '&quot;');
-                
+                const bgColor = 'bg-blue-50 border-blue-500';
+
                 return `
-                    <div class="flex items-start justify-between p-3 bg-blue-50 border-blue-500 rounded-lg border-l-4 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
+                    <div class="flex items-start justify-between p-3 ${bgColor} rounded-lg border-l-4 cursor-pointer hover:bg-blue-100" onclick='showEventDetails("${event.key}", ${eventJsonString})'>
                         <div class="flex-1 mr-4 overflow-hidden">
                             <div class="font-semibold text-gray-800 truncate" title="${event.title}">${event.title}</div>
-                            <div class="text-sm text-gray-600">${formattedDate}${event.time ? ` เวลา ${event.time}` : ''}</div>
-                            ${event.description ? `<div class="text-sm text-gray-500 mt-1 truncate" title="${event.description}">${event.description}</div>` : ''}
+                            <div class="text-xs text-gray-600">${event.description || 'ไม่มีรายละเอียด'}</div>
                         </div>
-                        <div class="text-xs text-gray-500 text-right whitespace-nowrap">โดย ${event.author}</div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-sm font-medium text-blue-600">${event.time || 'ตลอดวัน'}</div>
+                            <div class="text-xs text-gray-500">${formattedDate}</div>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // --- Functions อื่นๆ (ไม่เปลี่ยนแปลง) ---
-        function showAddEventModal() { document.getElementById('add-event-modal').classList.add('show'); document.getElementById('event-title').focus(); }
-        function hideAddEventModal() { document.getElementById('add-event-modal').classList.remove('show'); document.getElementById('add-event-form').reset(); }
-        function showEventDetails(key, event) {
-            selectedEventKey = key; 
-            const content = document.getElementById('event-details-content');
-            const eventDate = new Date(event.date + 'T00:00:00');
-            let formattedDate = "Invalid Date";
-            if (!isNaN(eventDate)) {
-                 formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]} ${eventDate.getFullYear() + 543}`;
-            }
 
-            content.innerHTML = `<div class="space-y-3"><div><span class="font-semibold text-gray-700">ชื่อกิจกรรม:</span> <p class="text-gray-800 break-words">${event.title || '-'}</p></div><div><span class="font-semibold text-gray-700">วันที่:</span> <p class="text-gray-800">${formattedDate}</p></div>${event.time ? `<div><span class="font-semibold text-gray-700">เวลา:</span> <p class="text-gray-800">${event.time}</p></div>` : ''}${event.description ? `<div><span class="font-semibold text-gray-700">รายละเอียด:</span> <p class="text-gray-800 break-words">${event.description}</p></div>` : ''}<div><span class="font-semibold text-gray-700">เพิ่มโดย:</span> <p class="text-gray-800 break-words">${event.author || '-'}</p></div></div>`;
+        // --- Modal Functions and Event Handlers ---
+
+        function showAddEventModal() {
+            document.getElementById('add-event-form').reset();
+            // Automatically set the date input if it's empty (e.g., clicking "Add Event" button)
+            const dateInput = document.getElementById('event-date');
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            document.getElementById('add-event-modal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            selectedEventKey = null; 
+        }
+
+        function showEventDetails(key, event) {
+            selectedEventKey = key;
+            const detailsContent = document.getElementById('event-details-content');
+            const timeDisplay = event.time ? `<p class="text-md mb-2"><strong>เวลา:</strong> ${event.time}</p>` : '';
+            
+            const eventDate = new Date(event.date + 'T00:00:00');
+            const formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]} ${eventDate.getFullYear() + 543}`;
+
+            detailsContent.innerHTML = `
+                <p class="text-xl font-semibold text-blue-700 mb-3">${event.title}</p>
+                <p class="text-md mb-2"><strong>วันที่:</strong> ${formattedDate}</p>
+                ${timeDisplay}
+                ${event.description ? `<p class="text-md mb-2"><strong>รายละเอียด:</strong> ${event.description}</p>` : ''}
+                <p class="text-sm text-gray-600 mt-4"><strong>ผู้เพิ่ม:</strong> ${event.author}</p>
+            `;
             document.getElementById('event-details-modal').classList.add('show');
         }
-        function hideEventDetails() { document.getElementById('event-details-modal').classList.remove('show'); selectedEventKey = null; }
 
-        async function addEventToFirebase(eventData) {
-            const saveBtn = document.getElementById('save-event-btn');
-            saveBtn.textContent = 'กำลังบันทึก...'; saveBtn.disabled = true;
-
-            try {
-                if (!eventData.title || !eventData.date || !eventData.author) {
-                     throw new Error("Missing required fields: title, date, or author.");
-                }
-                if (!/^\d{4}-\d{2}-\d{2}$/.test(eventData.date)) {
-                    throw new Error("Invalid date format. Use YYYY-MM-DD.");
-                }
-                if (eventData.time && !/^\d{2}:\d{2}$/.test(eventData.time)) {
-                     throw new Error("Invalid time format. Use HH:MM.");
-                }
-
-                await eventsRef.push({
-                    title: eventData.title,
-                    date: eventData.date,
-                    time: eventData.time || null, 
-                    description: eventData.description || null, 
-                    author: eventData.author,
-                    created_at: firebase.database.ServerValue.TIMESTAMP 
-                });
-                hideAddEventModal();
-                showMessage('เพิ่มกิจกรรมเรียบร้อยแล้ว', 'success');
-            } catch (error) {
-                console.error("Error adding event:", error);
-                showMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
-            } finally {
-                 saveBtn.textContent = 'บันทึก'; saveBtn.disabled = false;
+        document.getElementById('delete-event-btn').onclick = () => {
+            if (selectedEventKey && confirm('คุณแน่ใจหรือไม่ว่าต้องการลบกิจกรรมนี้?')) {
+                eventsRef.child(selectedEventKey).remove()
+                    .then(() => {
+                        closeModal('event-details-modal');
+                    })
+                    .catch(error => {
+                        alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+                    });
             }
-        }
-
-        async function deleteEventFromFirebase() {
-            if (!selectedEventKey) return;
-            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบกิจกรรมนี้?')) return; 
-
-            const deleteBtn = document.getElementById('delete-event-btn');
-            deleteBtn.textContent = 'กำลังลบ...'; deleteBtn.disabled = true;
-
-            try {
-                await eventsRef.child(selectedEventKey).remove();
-                hideEventDetails();
-                showMessage('ลบกิจกรรมเรียบร้อยแล้ว', 'success');
-            } catch (error) {
-                console.error("Error deleting event:", error);
-                showMessage('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
-            } finally {
-                 deleteBtn.textContent = 'ลบกิจกรรม'; deleteBtn.disabled = false;
-            }
-        }
-
-        function showMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-[1001] shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`; 
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            setTimeout(() => {
-                messageDiv.style.opacity = '0'; 
-                messageDiv.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => messageDiv.remove(), 500); 
-             }, 3000);
-        }
-
-        // --- Event Listeners ---
-        document.getElementById('add-event-btn').onclick = () => {
-             const dateInput = document.getElementById('event-date');
-             if (!dateInput.value) {
-                 const today = new Date();
-                 dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-             }
-             showAddEventModal();
         };
-        document.getElementById('cancel-event-btn').onclick = hideAddEventModal;
-        document.getElementById('close-details-btn').onclick = hideEventDetails;
-        document.getElementById('delete-event-btn').onclick = deleteEventFromFirebase; 
-        document.getElementById('prev-month').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
-        document.getElementById('next-month').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
-        document.getElementById('add-event-form').onsubmit = (e) => {
+
+        document.getElementById('add-event-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            addEventToFirebase({ 
-                title: document.getElementById('event-title').value.trim(),
-                date: document.getElementById('event-date').value,
-                time: document.getElementById('event-time').value,
-                description: document.getElementById('event-description').value.trim(),
-                author: document.getElementById('event-author').value.trim()
-            });
-        };
-        document.getElementById('add-event-modal').onclick = (e) => { if (e.target.id === 'add-event-modal') hideAddEventModal(); };
-        document.getElementById('event-details-modal').onclick = (e) => { if (e.target.id === 'event-details-modal') hideEventDetails(); };
+            
+            const title = document.getElementById('event-title').value.trim();
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value || '';
+            const description = document.getElementById('event-description').value.trim() || '';
+            const author = document.getElementById('event-author').value.trim();
 
-        // --- Firebase Listener ---
+            if (!title || !date || !author) {
+                alert("กรุณากรอก ชื่อกิจกรรม วันที่ และ ชื่อผู้เพิ่ม ให้ครบถ้วน");
+                return;
+            }
+
+            const newEvent = {
+                title: title,
+                date: date,
+                time: time,
+                description: description,
+                author: author,
+                timestamp: firebase.database.ServerValue.TIMESTAMP 
+            };
+
+            eventsRef.push(newEvent)
+                .then(() => {
+                    closeModal('add-event-modal');
+                })
+                .catch(error => {
+                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                });
+        });
+
+        // Event Listeners for buttons and modals
+        document.getElementById('add-event-btn').onclick = showAddEventModal;
+        document.getElementById('cancel-event-btn').onclick = () => closeModal('add-event-modal');
+        document.getElementById('close-details-btn').onclick = () => closeModal('event-details-modal');
+        document.getElementById('prev-month').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+        document.getElementById('next-month').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        // --- Firebase Data Listener ---
         eventsRef.on('value', (snapshot) => {
-            allEvents = snapshot.val() || {}; 
-            console.log("Data from Firebase:", allEvents); 
-            renderCalendar(); 
+            allEvents = snapshot.val() || {};
+            renderCalendar();
         }, (error) => {
-             console.error("Firebase read failed:", error);
-             document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดข้อมูลปฏิทิน กรุณาตรวจสอบการตั้งค่า Firebase และ Rules</div>';
-             document.getElementById('upcoming-events').innerHTML = '<div class="p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดกิจกรรม</div>';
-             document.getElementById('monthly-summary-events').innerHTML = '<div class="p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดกิจกรรม</div>';
-             showMessage('ไม่สามารถโหลดข้อมูลจาก Firebase ได้', 'error');
+            console.error("Firebase data load error:", error);
+            document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูลกิจกรรม</div>';
+            document.getElementById('upcoming-events').innerHTML = '<p class="text-red-500 text-center py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
         });
 
     </script>
