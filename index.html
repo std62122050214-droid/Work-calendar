@@ -11,7 +11,8 @@
         body { box-sizing: border-box; height: 100%; margin: 0; font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         html { height: 100%; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
-        .calendar-day { background-color: white; min-height: 120px; padding: 8px; position: relative; cursor: pointer; } 
+        /* 💡 แก้ไข: ลด min-height จาก 120px เป็น 100px */
+        .calendar-day { background-color: white; min-height: 100px; padding: 8px; position: relative; cursor: pointer; } 
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } 
         
         /* --- สีวันหยุดที่กำหนดเอง --- */
@@ -39,14 +40,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
-    <div class="container mx-auto p-6 max-w-6xl">
+    <div class="container mx-auto p-6 max-w-4xl"> 
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">Calendar Planner GLTH:AD👩‍💻</h1>
+            <h1 id="calendar-title" class="text-2xl font-bold text-gray-800 mb-4">Calendar Planner GLTH:AD👩‍💻</h1>
             <div class="flex flex-wrap gap-4 items-center">
                 <button id="add-event-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"> เพิ่มกิจกรรมใหม่ </button>
                 <div class="flex items-center gap-2">
                     <button id="prev-month" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"> ← เดือนก่อน </button>
-                    <span id="current-month" class="text-xl font-semibold text-gray-700 px-4 w-48 text-center"></span> <button id="next-month" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"> เดือนถัดไป → </button>
+                    <span id="current-month" class="text-lg font-semibold text-gray-700 px-4 w-40 text-center"></span> <button id="next-month" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"> เดือนถัดไป → </button>
                 </div>
             </div>
             <div class="mt-4 flex flex-wrap gap-4 text-sm">
@@ -119,7 +120,7 @@
           authDomain: "work-calendar-fe6c1.firebaseapp.com",
           databaseURL: "https://work-calendar-fe6c1-default-rtdb.asia-southeast1.firebasedatabase.app",
           projectId: "work-calendar-fe6c1",
-          storageBucket: "work-calendar-fe6c1.firebasestorage.app",
+          storageBucket: "work-calendar-fe6c1.firebase-storage.app",
           messagingSenderId: "792437599231",
           appId: "1:792437599231:web:2420688ca88867f57155ca",
           measurementId: "G-XK0NJMT3EG" 
@@ -328,12 +329,13 @@
             renderUpcomingEvents();
         }
 
-        // --- Function: Create Day Element (ยังคงรองรับการกำหนดวันหยุดเอง) ---
+        // --- Function: Create Day Element (มีการปรับขนาดฟอนต์ของตัวเลขวัน) ---
         function createDayElement(day, isOtherMonth, dateObj) {
             const dayDiv = document.createElement('div');
             dayDiv.className = `calendar-day ${isOtherMonth ? 'other-month' : ''}`;
 
-            let dayLabel = `<div class="font-semibold text-sm mb-1 day-number">${day}</div>`; 
+            // 💡 แก้ไข: ลดขนาดฟอนต์ของตัวเลขวันจาก text-sm เป็น text-xs และลด margin-bottom จาก mb-1 เป็น mb-0
+            let dayLabel = `<div class="font-semibold text-xs mb-0 day-number">${day}</div>`; 
             const dateStr = dateObj ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
 
             if (!isOtherMonth && dateObj) {
@@ -373,7 +375,7 @@
                 
                 eventsToDisplay.forEach(([key, event]) => { 
                     if (isCustomHoliday && event.title.trim() === '🔴 วันหยุดบริษัทฯ' && eventsToDisplay.length === 1) {
-                         // Skip event item display for pure company holiday to reduce clutter
+                            // Skip event item display for pure company holiday to reduce clutter
                     } else {
                         const eventDiv = document.createElement('div');
                         eventDiv.className = 'event-item';
@@ -468,125 +470,103 @@
             }).join('');
         }
 
-        function showAddEventModal() { document.getElementById('add-event-modal').classList.add('show'); document.getElementById('event-title').focus(); }
-        function hideAddEventModal() { document.getElementById('add-event-modal').classList.remove('show'); document.getElementById('add-event-form').reset(); }
-        function showEventDetails(key, event) {
-            selectedEventKey = key; 
-            const content = document.getElementById('event-details-content');
-            const eventDate = new Date(event.date + 'T00:00:00');
-            let formattedDate = "Invalid Date";
-            if (!isNaN(eventDate)) {
-                 formattedDate = `${eventDate.getDate()} ${thaiMonths[eventDate.getMonth()]} ${eventDate.getFullYear() + 543}`;
-            }
+        function showAddEventModal() { 
+            document.getElementById('add-event-modal').classList.add('show'); 
+            document.getElementById('event-title').focus();
+        }
 
-            content.innerHTML = `<div class="space-y-3"><div><span class="font-semibold text-gray-700">ชื่อกิจกรรม:</span> <p class="text-gray-800 break-words">${event.title || '-'}</p></div><div><span class="font-semibold text-gray-700">วันที่:</span> <p class="text-gray-800">${formattedDate}</p></div>${event.time ? `<div><span class="font-semibold text-gray-700">เวลา:</span> <p class="text-gray-800">${event.time}</p></div>` : ''}${event.description ? `<div><span class="font-semibold text-gray-700">รายละเอียด:</span> <p class="text-gray-800 break-words">${event.description}</p></div>` : ''}<div><span class="font-semibold text-gray-700">เพิ่มโดย:</span> <p class="text-gray-800 break-words">${event.author || '-'}</p></div></div>`;
+        function closeAddEventModal() {
+            document.getElementById('add-event-modal').classList.remove('show');
+            document.getElementById('add-event-form').reset();
+        }
+
+        function showEventDetails(key, event) {
+            selectedEventKey = key;
+            const detailsContent = document.getElementById('event-details-content');
+            detailsContent.innerHTML = `
+                <div class="space-y-3">
+                    <p><strong>ชื่อกิจกรรม:</strong> ${event.title}</p>
+                    <p><strong>วันที่:</strong> ${formatDate(event.date)}</p>
+                    ${event.time ? `<p><strong>เวลา:</strong> ${event.time}</p>` : ''}
+                    ${event.description ? `<p><strong>รายละเอียด:</strong> ${event.description}</p>` : ''}
+                    <p><strong>ผู้เพิ่ม:</strong> ${event.author}</p>
+                </div>
+            `;
             document.getElementById('event-details-modal').classList.add('show');
         }
-        function hideEventDetails() { document.getElementById('event-details-modal').classList.remove('show'); selectedEventKey = null; }
 
-        async function addEventToFirebase(eventData) {
-            const saveBtn = document.getElementById('save-event-btn');
-            saveBtn.textContent = 'กำลังบันทึก...'; saveBtn.disabled = true;
+        function closeEventDetailsModal() {
+            document.getElementById('event-details-modal').classList.remove('show');
+            selectedEventKey = null;
+        }
 
-            try {
-                if (!eventData.title || !eventData.date || !eventData.author) {
-                     throw new Error("Missing required fields: title, date, or author.");
-                }
-                if (!/^\d{4}-\d{2}-\d{2}$/.test(eventData.date)) {
-                    throw new Error("Invalid date format. Use YYYY-MM-DD.");
-                }
-                if (eventData.time && !/^\d{2}:\d{2}$/.test(eventData.time)) {
-                     throw new Error("Invalid time format. Use HH:MM.");
-                }
+        function saveEvent(event) {
+            event.preventDefault();
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            const description = document.getElementById('event-description').value;
+            const author = document.getElementById('event-author').value || 'ไม่ระบุ';
 
-                await eventsRef.push({
-                    title: eventData.title,
-                    date: eventData.date,
-                    time: eventData.time || null, 
-                    description: eventData.description || null, 
-                    author: eventData.author,
-                    created_at: firebase.database.ServerValue.TIMESTAMP 
+            const newEvent = { title, date, time, description, author, createdAt: firebase.database.ServerValue.TIMESTAMP };
+            
+            eventsRef.push(newEvent)
+                .then(() => {
+                    closeAddEventModal();
+                    // Data listener will handle re-rendering
+                })
+                .catch(error => {
+                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
                 });
-                hideAddEventModal();
-                showMessage('เพิ่มกิจกรรมเรียบร้อยแล้ว', 'success');
-            } catch (error) {
-                console.error("Error adding event:", error);
-                showMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
-            } finally {
-                 saveBtn.textContent = 'บันทึก'; saveBtn.disabled = false;
+        }
+
+        function deleteEvent() {
+            if (selectedEventKey && confirm('คุณแน่ใจหรือไม่ว่าต้องการลบกิจกรรมนี้?')) {
+                eventsRef.child(selectedEventKey).remove()
+                    .then(() => {
+                        closeEventDetailsModal();
+                        // Data listener will handle re-rendering
+                    })
+                    .catch(error => {
+                        alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+                    });
             }
         }
 
-        async function deleteEventFromFirebase() {
-            if (!selectedEventKey) return;
-            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบกิจกรรมนี้?')) return; 
-
-            const deleteBtn = document.getElementById('delete-event-btn');
-            deleteBtn.textContent = 'กำลังลบ...'; deleteBtn.disabled = true;
-
-            try {
-                await eventsRef.child(selectedEventKey).remove();
-                hideEventDetails();
-                showMessage('ลบกิจกรรมเรียบร้อยแล้ว', 'success');
-            } catch (error) {
-                console.error("Error deleting event:", error);
-                showMessage('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
-            } finally {
-                 deleteBtn.textContent = 'ลบกิจกรรม'; deleteBtn.disabled = false;
-            }
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            const dateObj = new Date(year, month - 1, day);
+            return `${parseInt(day)} ${thaiMonths[dateObj.getMonth()]} ${parseInt(year) + 543}`;
         }
 
-        function showMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-[1001] shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`; 
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            setTimeout(() => {
-                messageDiv.style.opacity = '0'; 
-                messageDiv.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => messageDiv.remove(), 500); 
-             }, 3000);
-        }
+        // --- Event Listeners and Initial Load ---
+        document.getElementById('add-event-btn').addEventListener('click', () => {
+            document.getElementById('event-date').value = new Date().toISOString().split('T')[0];
+            showAddEventModal();
+        });
+        document.getElementById('cancel-event-btn').addEventListener('click', closeAddEventModal);
+        document.getElementById('add-event-form').addEventListener('submit', saveEvent);
 
-        // --- Event Listeners (ไม่เปลี่ยนแปลง) ---
-        document.getElementById('add-event-btn').onclick = () => {
-             const dateInput = document.getElementById('event-date');
-             if (!dateInput.value) {
-                 const today = new Date();
-                 dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-             }
-             showAddEventModal();
-        };
-        document.getElementById('cancel-event-btn').onclick = hideAddEventModal;
-        document.getElementById('close-details-btn').onclick = hideEventDetails;
-        document.getElementById('delete-event-btn').onclick = deleteEventFromFirebase; 
-        document.getElementById('prev-month').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
-        document.getElementById('next-month').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
-        document.getElementById('add-event-form').onsubmit = (e) => {
-            e.preventDefault();
-            addEventToFirebase({ 
-                title: document.getElementById('event-title').value.trim(),
-                date: document.getElementById('event-date').value,
-                time: document.getElementById('event-time').value,
-                description: document.getElementById('event-description').value.trim(),
-                author: document.getElementById('event-author').value.trim()
-            });
-        };
-        document.getElementById('add-event-modal').onclick = (e) => { if (e.target.id === 'add-event-modal') hideAddEventModal(); };
-        document.getElementById('event-details-modal').onclick = (e) => { if (e.target.id === 'event-details-modal') hideEventDetails(); };
+        document.getElementById('delete-event-btn').addEventListener('click', deleteEvent);
+        document.getElementById('close-details-btn').addEventListener('click', closeEventDetailsModal);
 
-        // --- Firebase Listener (ไม่เปลี่ยนแปลง) ---
-        eventsRef.on('value', (snapshot) => {
-            allEvents = snapshot.val() || {}; 
-            console.log("Data from Firebase:", allEvents); 
-            renderCalendar(); 
-        }, (error) => {
-             console.error("Firebase read failed:", error);
-             document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดข้อมูลปฏิทิน กรุณาตรวจสอบการตั้งค่า Firebase และ Rules</div>';
-             document.getElementById('upcoming-events').innerHTML = '<div class="p-10 text-center text-red-600">⚠️ เกิดข้อผิดพลาดในการโหลดกิจกรรม</div>';
-             showMessage('ไม่สามารถโหลดข้อมูลจาก Firebase ได้', 'error');
+        document.getElementById('prev-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+        document.getElementById('next-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
         });
 
+        // Load data and render
+        eventsRef.on('value', (snapshot) => {
+            allEvents = snapshot.val() || {};
+            renderCalendar();
+        }, (error) => {
+            console.error("Firebase Read Failed:", error);
+            document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-500">❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล!</div>';
+        });
     </script>
 </body>
 </html>
