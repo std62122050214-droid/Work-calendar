@@ -12,43 +12,50 @@
         html { height: 100%; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
         
-        /* --- (ปรับแก้ Desktop) เพิ่มขนาดและความสูง --- */
+        /* --- (ปรับแก้) Desktop: เปลี่ยนเป็น height คงที่ และใช้ flex --- */
         .calendar-day { 
             background-color: white; 
-            min-height: 150px; /* เพิ่มความสูงสำหรับ Desktop */
+            height: 150px; /* (สำคัญ) กำหนดความสูงคงที่ */
             padding: 8px; 
             position: relative; 
             cursor: pointer;
-            font-size: 1rem; /* เพิ่มขนาดฟอนต์หลัก */
+            font-size: 1rem;
+            display: flex; /* ใช้ Flexbox */
+            flex-direction: column; /* เรียงจากบนลงล่าง */
         } 
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } 
         
+        /* --- (ใหม่) Wrapper สำหรับเนื้อหาที่เลื่อนได้ --- */
+        .day-content-wrapper {
+            flex-grow: 1; /* ยืดให้เต็มพื้นที่ที่เหลือ */
+            overflow-y: auto; /* (สำคัญ) ทำให้เลื่อนได้เมื่อเนื้อหาล้น */
+            overflow-x: hidden;
+            margin-top: 4px;
+            /* Scrollbar styling (optional) */
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        .day-content-wrapper::-webkit-scrollbar { width: 5px; }
+        .day-content-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
+        .day-content-wrapper::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 6px; }
+
+
         /* --- Holiday Colors --- */
-        .calendar-day.company-holiday {
-            background-color: #fee2e2 !important; 
-            border-left: none; 
-        }
-        .calendar-day.public-holiday {
-            background-color: #ffedd5; 
-            border-left: 4px solid #f97316; 
-        }
-        .calendar-day.buddhist-day {
-            background-color: #fef9c3; 
-            border-left: none; 
-        }
+        .calendar-day.company-holiday { background-color: #fee2e2 !important; border-left: none; }
+        .calendar-day.public-holiday { background-color: #ffedd5; border-left: 4px solid #f97316; }
+        .calendar-day.buddhist-day { background-color: #fef9c3; border-left: none; }
         
-        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์วันหยุด */
+        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ และอนุญาตให้ตัดคำ */
         .holiday-label {
             font-size: 0.9rem; /* 14.4px */
             font-weight: 500;
             margin-bottom: 2px;
-            overflow: hidden;
-            max-height: 2em; 
+            white-space: normal; /* (สำคัญ) อนุญาตให้ตัดคำ */
+            word-break: break-word; /* (สำคัญ) ตัดคำที่ยาวเกิน */
             line-height: 1.2;
-            white-space: nowrap; 
         }
 
-        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ Event */
+        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ และอนุญาตให้ตัดคำ */
         .event-item { 
             background-color: #3b82f6; 
             color: white; 
@@ -58,8 +65,8 @@
             font-size: 0.875rem; /* 14px */
             cursor: pointer; 
             overflow: hidden; 
-            text-overflow: ellipsis; 
-            white-space: nowrap; 
+            white-space: normal; /* (สำคัญ) อนุญาตให้ตัดคำ */
+            word-break: break-word; /* (สำคัญ) ตัดคำที่ยาวเกิน */
         }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; }
@@ -68,7 +75,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* (ปรับแก้ Desktop) เพิ่มขนาดเลขวันที่ */
-        .day-number { pointer-events: none; font-size: 1.25rem; /* 20px */ }
+        .day-number { pointer-events: none; font-size: 1.25rem; /* 20px */ flex-shrink: 0; }
 
         /* Day Name visibility */
         .day-name-full { display: block; }
@@ -81,36 +88,24 @@
         @media (max-width: 768px) {
             .container { padding: 4px; }
             .calendar-day { 
-                min-height: 90px; /* **(Mobile) ลดความสูงช่องวัน** */
+                height: 100px; /* **(Mobile) ลดความสูงช่องวัน (คงที่)** */
                 padding: 2px;
             }
             .day-number { font-size: 0.8rem; }
-            .holiday-label { font-size: 0.6rem; max-height: 1.5em; }
-            .event-item { font-size: 0.7rem; padding: 1px 2px; margin: 1px 0; } 
+            /* (Mobile) ปรับปรุงให้ตัดคำได้ แม้จะซ่อนอยู่ */
+            .holiday-label { font-size: 0.6rem; white-space: normal; word-break: break-word; }
+            .event-item { font-size: 0.7rem; padding: 1px 2px; margin: 1px 0; white-space: normal; word-break: break-word; } 
 
             /* **(Mobile) ซ่อนข้อความ แสดงเฉพาะอิโมจิ** */
             .desktop-text { display: none; }
 
             /* **(Mobile) ลดขนาดส่วนหัว** */
             #calendar-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
-            .header-controls { 
-                flex-direction: column; 
-                gap: 8px; 
-            }
+            .header-controls { flex-direction: column; gap: 8px; }
             .month-navigation { order: 1; }
-            #add-event-btn { 
-                order: 2; 
-                padding: 6px 10px; 
-                font-size: 0.8rem; 
-            }
-            #prev-month, #next-month { 
-                padding: 6px 8px; 
-                font-size: 0.8rem; 
-            }
-            #current-month { 
-                font-size: 1.1rem; 
-                padding: 0 8px;
-            }
+            #add-event-btn { order: 2; padding: 6px 10px; font-size: 0.8rem; }
+            #prev-month, #next-month { padding: 6px 8px; font-size: 0.8rem; }
+            #current-month { font-size: 1.1rem; padding: 0 8px; }
             .legend-container { justify-content: center; }
 
             /* **(Mobile) ย่อชื่อวัน** */
@@ -132,7 +127,7 @@
 <body class="bg-gray-50">
     <div class="container mx-auto p-6 max-w-6xl">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">Calendar Planner:AD👩‍💻</h1>
+            <h1 id="calendar-title" class="text-3xl font-bold text-gray-800 mb-4">Calendar Planner GLTH:AD👩‍💻</h1>
             <div class="flex flex-wrap gap-4 items-center header-controls">
                 <button id="add-event-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"> เพิ่มกิจกรรมใหม่ </button>
                 <div class="flex items-center gap-2 month-navigation">
@@ -450,13 +445,22 @@
             renderMonthlySummary();
         }
 
-        // (REQ 1) Modified function to wrap text in <span>
+        // (REQ 1 & 2) Modified function to wrap text in <span> and use new DOM structure
         function createDayElement(day, isOtherMonth, dateObj) {
             const dayDiv = document.createElement('div');
             dayDiv.className = `calendar-day ${isOtherMonth ? 'other-month' : ''}`;
 
-            let dayLabel = `<div class="font-semibold mb-1 day-number">${day}</div>`; 
             const dateStr = dateObj ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+
+            // --- Part 1: Day Number (Not scrollable) ---
+            const dayLabelDiv = document.createElement('div');
+            dayLabelDiv.className = 'font-semibold mb-1 day-number';
+            dayLabelDiv.textContent = day;
+            dayDiv.appendChild(dayLabelDiv);
+
+            // --- Part 2: Content Wrapper (Scrollable) ---
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'day-content-wrapper';
 
             if (!isOtherMonth && dateObj) {
                 
@@ -468,16 +472,16 @@
                     dayDiv.classList.add('company-holiday');
                     const holidayEvent = dayEvents.find(([key, event]) => event.title && event.title.includes('🔴 วันหยุดบริษัทฯ'));
                     const title = holidayEvent ? holidayEvent[1].title.replace('🔴 ', '') : 'วันหยุดบริษัทฯ';
-                    dayLabel += `<div class="text-red-700 holiday-label pointer-events-none">🔴 <span class="desktop-text">${title}</span></div>`;
+                    contentWrapper.innerHTML += `<div class="text-red-700 holiday-label pointer-events-none">🔴 <span class="desktop-text">${title}</span></div>`;
                 
                 } else if (thaiHolidays[dateStr]) {
                     dayDiv.classList.add('public-holiday');
                     const holidayName = thaiHolidays[dateStr];
-                    dayLabel += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ <span class="desktop-text">${holidayName}</span></div>`;
+                    contentWrapper.innerHTML += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ <span class="desktop-text">${holidayName}</span></div>`;
                 
                 } else if (buddhistHolyDays.includes(dateStr)) {
                     dayDiv.classList.add('buddhist-day');
-                    dayLabel += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 <span class="desktop-text">วันพระ</span></div>`;
+                    contentWrapper.innerHTML += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 <span class="desktop-text">วันพระ</span></div>`;
                 }
                 // --- End Holiday Check ---
                 
@@ -498,7 +502,7 @@
                         e.stopPropagation(); 
                         showEventDetails(key, event);
                     };
-                    dayDiv.appendChild(eventDiv);
+                    contentWrapper.appendChild(eventDiv); // Add to scrollable wrapper
                 });
 
                 // Click on day to add event
@@ -510,20 +514,12 @@
             } else {
                 dayDiv.onclick = null; 
             }
-
-            // Combine day label and event divs
-            const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = dayLabel;
-            while(dayDiv.firstChild) {
-                tempContainer.appendChild(dayDiv.firstChild);
-            }
-            dayDiv.appendChild(tempContainer);
-
+            
+            dayDiv.appendChild(contentWrapper); // Add the scrollable wrapper to the day cell
             return dayDiv;
         }
 
         // --- Function: Render Upcoming Events (Filtered) ---
-        // (REQ 3: Filtered holidays)
         function renderUpcomingEvents() {
             const upcomingContainer = document.getElementById('upcoming-events');
             const today = new Date();
@@ -540,7 +536,6 @@
                         const isUpcoming = eventDate >= today && eventDate < nextWeek;
                         if (!isUpcoming) return false;
 
-                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
@@ -589,7 +584,6 @@
         }
         
         // --- Function: Render Monthly Summary (Filtered) ---
-        // (REQ 3: Filtered holidays)
         function renderMonthlySummary() {
             const summaryContainer = document.getElementById('monthly-summary-events');
             const titleEl = document.getElementById('monthly-summary-title');
@@ -608,7 +602,6 @@
                         const isCurrentMonth = eventDate.getFullYear() === currentYear && eventDate.getMonth() === currentMonth;
                         if (!isCurrentMonth) return false;
 
-                        // **REQ 3: Filter holidays**
                         if (isExcludedEvent(event)) {
                             return false;
                         }
@@ -655,7 +648,6 @@
 
         function showAddEventModal() {
             document.getElementById('add-event-form').reset();
-            // Automatically set the date input if it's empty (e.g., clicking "Add Event" button)
             const dateInput = document.getElementById('event-date');
             if (!dateInput.value) {
                 dateInput.value = new Date().toISOString().split('T')[0];
@@ -680,7 +672,8 @@
                 <p class="text-xl font-semibold text-blue-700 mb-3">${event.title}</p>
                 <p class="text-md mb-2"><strong>วันที่:</strong> ${formattedDate}</p>
                 ${timeDisplay}
-                ${event.description ? `<p class="text-md mb-2"><strong>รายละเอียด:</strong> ${event.description}</p>` : ''}
+                <p class="text-md mb-2"><strong>รายละเอียด:</strong></p>
+                <p class="text-gray-700 bg-gray-50 p-2 border rounded whitespace-pre-wrap break-words">${event.description || 'ไม่มีรายละเอียด'}</p>
                 <p class="text-sm text-gray-600 mt-4"><strong>ผู้เพิ่ม:</strong> ${event.author}</p>
             `;
             document.getElementById('event-details-modal').classList.add('show');
