@@ -12,26 +12,23 @@
         html { height: 100%; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
         
-        /* --- (ปรับแก้) Desktop: เปลี่ยนเป็น height คงที่ และใช้ flex --- */
         .calendar-day { 
             background-color: white; 
-            height: 150px; /* (สำคัญ) กำหนดความสูงคงที่ */
+            height: 150px; /* (Desktop) ความสูงคงที่ */
             padding: 8px; 
             position: relative; 
             cursor: pointer;
             font-size: 1rem;
-            display: flex; /* ใช้ Flexbox */
-            flex-direction: column; /* เรียงจากบนลงล่าง */
+            display: flex; 
+            flex-direction: column; 
         } 
         .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; cursor: default; } 
         
-        /* --- (ใหม่) Wrapper สำหรับเนื้อหาที่เลื่อนได้ --- */
         .day-content-wrapper {
-            flex-grow: 1; /* ยืดให้เต็มพื้นที่ที่เหลือ */
+            flex-grow: 1; 
             overflow-y: auto; /* (สำคัญ) ทำให้เลื่อนได้เมื่อเนื้อหาล้น */
             overflow-x: hidden;
             margin-top: 4px;
-            /* Scrollbar styling (optional) */
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f1f5f9;
         }
@@ -39,25 +36,26 @@
         .day-content-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
         .day-content-wrapper::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 6px; }
 
-
+        .calendar-day.today {
+            background-color: #a7f3d0 !important; 
+        }
+        
         /* --- Holiday Colors --- */
         .calendar-day.company-holiday { background-color: #fee2e2 !important; border-left: none; }
         .calendar-day.public-holiday { background-color: #ffedd5; border-left: 4px solid #f97316; }
         .calendar-day.buddhist-day { background-color: #fef9c3; border-left: none; }
         
-        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ และอนุญาตให้ตัดคำ */
         .holiday-label {
             font-size: 0.9rem; /* 14.4px */
             font-weight: 500;
             margin-bottom: 2px;
-            white-space: normal; /* (สำคัญ) อนุญาตให้ตัดคำ */
-            word-break: break-word; /* (สำคัญ) ตัดคำที่ยาวเกิน */
+            white-space: normal; 
+            word-break: break-word; 
             line-height: 1.2;
         }
 
-        /* (ปรับแก้ Desktop) เพิ่มขนาดฟอนต์ และอนุญาตให้ตัดคำ */
         .event-item { 
-            background-color: #3b82f6; 
+            background-color: #3b82f6; /* (Default) Blue */
             color: white; 
             padding: 2px 6px; 
             margin: 2px 0; 
@@ -65,41 +63,36 @@
             font-size: 0.875rem; /* 14px */
             cursor: pointer; 
             overflow: hidden; 
-            white-space: normal; /* (สำคัญ) อนุญาตให้ตัดคำ */
-            word-break: break-word; /* (สำคัญ) ตัดคำที่ยาวเกิน */
+            white-space: normal; 
+            word-break: break-word; 
         }
+        
+        /* --- (ใหม่) CSS สำหรับ Event ที่เป็นวันหยุดบริษัทฯ (สีแดง) --- */
+        .event-item.company-event {
+            background-color: #ef4444; /* bg-red-500 */
+        }
+        .event-item.company-event:hover {
+            background-color: #dc2626; /* bg-red-600 */
+        }
+        /* -------------------------------------------------------- */
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; }
         .modal.show { display: flex; align-items: center; justify-content: center; }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; animation: spin 1s ease infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* (ปรับแก้ Desktop) เพิ่มขนาดเลขวันที่ */
         .day-number { pointer-events: none; font-size: 1.25rem; /* 20px */ flex-shrink: 0; }
-
-        /* Day Name visibility */
         .day-name-full { display: block; }
         .day-name-short { display: none; }
-
-        /* (Mobile) ซ่อนข้อความบน Desktop */
         .desktop-text { display: inline; }
 
-        /* --- (คงเดิม) Responsive Adjustments for Mobile (<= 768px) --- */
         @media (max-width: 768px) {
             .container { padding: 4px; }
-            .calendar-day { 
-                height: 100px; /* **(Mobile) ลดความสูงช่องวัน (คงที่)** */
-                padding: 2px;
-            }
+            .calendar-day { height: 100px; padding: 2px; }
             .day-number { font-size: 0.8rem; }
-            /* (Mobile) ปรับปรุงให้ตัดคำได้ แม้จะซ่อนอยู่ */
             .holiday-label { font-size: 0.6rem; white-space: normal; word-break: break-word; }
             .event-item { font-size: 0.7rem; padding: 1px 2px; margin: 1px 0; white-space: normal; word-break: break-word; } 
-
-            /* **(Mobile) ซ่อนข้อความ แสดงเฉพาะอิโมจิ** */
             .desktop-text { display: none; }
-
-            /* **(Mobile) ลดขนาดส่วนหัว** */
             #calendar-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
             .header-controls { flex-direction: column; gap: 8px; }
             .month-navigation { order: 1; }
@@ -107,13 +100,10 @@
             #prev-month, #next-month { padding: 6px 8px; font-size: 0.8rem; }
             #current-month { font-size: 1.1rem; padding: 0 8px; }
             .legend-container { justify-content: center; }
-
-            /* **(Mobile) ย่อชื่อวัน** */
             .day-name-full { display: none !important; }
             .day-name-short { display: block !important; }
         }
 
-        /* --- (คงเดิม Desktop) ขยายเต็มจอ --- */
         @media (min-width: 1024px) {
             .container.mx-auto {
                 max-width: 100%;
@@ -148,6 +138,10 @@
                     <div class="w-4 h-4 bg-yellow-100 rounded"></div>
                     <span class="text-gray-600">🙏 วันพระ</span>
                 </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4" style="background-color: #a7f3d0;"></div>
+                    <span class="text-gray-600">📅 วันนี้</span>
+                </div>
             </div>
         </div>
 
@@ -159,7 +153,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
-             <div class="calendar-grid bg-gray-100 text-center font-semibold text-gray-700">
+            <div class="calendar-grid bg-gray-100 text-center font-semibold text-gray-700">
                 <div class="p-4 day-name-full">อาทิตย์</div>
                 <div class="p-4 day-name-full">จันทร์</div>
                 <div class="p-4 day-name-full">อังคาร</div>
@@ -372,7 +366,7 @@
         
         // --- Helper Functions ---
 
-        // (REQ 3) Helper function to check if an event is a *predefined* or *custom* holiday
+        // Helper function to check if an event is a *predefined* or *custom* holiday
         function isExcludedEvent(event) {
             const eventTitle = event.title || '';
             
@@ -389,12 +383,6 @@
             }
             
             return false;
-        }
-
-        function isCustomCompanyHoliday(events) {
-            return events.some(([key, event]) => 
-                event.title && event.title.includes('🔴 วันหยุดบริษัทฯ')
-            );
         }
         
         function getEventsForDateStr(dateStr) {
@@ -445,7 +433,7 @@
             renderMonthlySummary();
         }
 
-        // (REQ 1 & 2) Modified function to wrap text in <span> and use new DOM structure
+        // --- (ปรับปรุง) Function: Create Day Element (แยก Static และ Dynamic) ---
         function createDayElement(day, isOtherMonth, dateObj) {
             const dayDiv = document.createElement('div');
             dayDiv.className = `calendar-day ${isOtherMonth ? 'other-month' : ''}`;
@@ -458,23 +446,24 @@
             dayLabelDiv.textContent = day;
             dayDiv.appendChild(dayLabelDiv);
 
+            // --- (เพิ่มใหม่) ตรวจสอบ "วันนี้" ---
+            if (!isOtherMonth && dateObj) {
+                const today = new Date();
+                if (dateObj.toDateString() === today.toDateString()) {
+                    dayDiv.classList.add('today');
+                }
+            }
+            // --- (สิ้นสุดส่วนที่เพิ่ม) ---
+
             // --- Part 2: Content Wrapper (Scrollable) ---
             const contentWrapper = document.createElement('div');
             contentWrapper.className = 'day-content-wrapper';
 
             if (!isOtherMonth && dateObj) {
                 
-                const dayEvents = getEventsForDateStr(dateStr);
-                const isCustomHoliday = isCustomCompanyHoliday(dayEvents); 
-
-                // --- Holiday Priority Check (with spans) ---
-                if (isCustomHoliday) {
-                    dayDiv.classList.add('company-holiday');
-                    const holidayEvent = dayEvents.find(([key, event]) => event.title && event.title.includes('🔴 วันหยุดบริษัทฯ'));
-                    const title = holidayEvent ? holidayEvent[1].title.replace('🔴 ', '') : 'วันหยุดบริษัทฯ';
-                    contentWrapper.innerHTML += `<div class="text-red-700 holiday-label pointer-events-none">🔴 <span class="desktop-text">${title}</span></div>`;
-                
-                } else if (thaiHolidays[dateStr]) {
+                // --- 1. Add Static (Hardcoded) Holidays First ---
+                // (สิ่งเหล่านี้ไม่สามารถคลิกเพื่อลบได้)
+                if (thaiHolidays[dateStr]) {
                     dayDiv.classList.add('public-holiday');
                     const holidayName = thaiHolidays[dateStr];
                     contentWrapper.innerHTML += `<div class="text-orange-700 holiday-label pointer-events-none">🏛️ <span class="desktop-text">${holidayName}</span></div>`;
@@ -483,29 +472,43 @@
                     dayDiv.classList.add('buddhist-day');
                     contentWrapper.innerHTML += `<div class="text-yellow-700 holiday-label pointer-events-none">🙏 <span class="desktop-text">วันพระ</span></div>`;
                 }
-                // --- End Holiday Check ---
-                
-                // Add events (sorted)
+
+                // --- 2. Add Dynamic (Firebase) Events ---
+                const dayEvents = getEventsForDateStr(dateStr);
                 const eventsToDisplay = dayEvents.sort(([, a], [, b]) => (a.time || '99:99').localeCompare(b.time || '99:99'));
                 
                 eventsToDisplay.forEach(([key, event]) => { 
-                    if (isExcludedEvent(event)) {
-                        return; // Skip rendering holiday tags as blue event items
+                    
+                    const eventDiv = document.createElement('div');
+                    
+                    if (event.title && event.title.includes('🔴 วันหยุดบริษัทฯ')) {
+                        // (แก้ไข) นี่คือ "วันหยุดบริษัทฯ" ที่ผู้ใช้สร้าง -> ทำให้คลิกได้ และเป็นสีแดง
+                        dayDiv.classList.add('company-holiday'); // Color the cell
+                        eventDiv.className = 'event-item company-event'; // ใช้ class สีแดง
+                        eventDiv.innerHTML = `🔴 <span class="desktop-text">${event.title.replace('🔴 ', '')}</span>`;
+                    
+                    } else if (isExcludedEvent(event)) {
+                        // นี่คือ event ที่มีชื่อเหมือนวันหยุด (เช่น 🏛️ วันหยุดราชการ) ที่ผู้ใช้สร้างเอง
+                        // เราจะไม่แสดงมันในช่องกิจกรรม (เพราะจะซ้ำกับ Label สีส้ม/เหลือง)
+                        return; 
+
+                    } else {
+                        // นี่คือกิจกรรมทั่วไป -> ทำให้คลิกได้ และเป็นสีน้ำเงิน
+                        eventDiv.className = 'event-item';
+                        eventDiv.innerHTML = `🔵 <span class="desktop-text">${event.time ? `${event.time} ` : ''}${event.title}</span>`; 
                     }
 
-                    const eventDiv = document.createElement('div');
-                    eventDiv.className = 'event-item';
-                    // (REQ 1) Add span for responsive text
-                    eventDiv.innerHTML = `🔵 <span class="desktop-text">${event.time ? `${event.time} ` : ''}${event.title}</span>`; 
+                    // (สำคัญ) เพิ่ม onclick ให้กับทุกกิจกรรมที่มาจาก Firebase
                     eventDiv.title = `${event.title} (โดย ${event.author})`; 
                     eventDiv.onclick = (e) => {
                         e.stopPropagation(); 
-                        showEventDetails(key, event);
+                        showEventDetails(key, event); // Modal นี้มีปุ่ม "ลบกิจกรรม"
                     };
-                    contentWrapper.appendChild(eventDiv); // Add to scrollable wrapper
+                    contentWrapper.appendChild(eventDiv);
                 });
 
-                // Click on day to add event
+
+                // Click on day cell to ADD event
                 dayDiv.onclick = () => {
                     document.getElementById('event-date').value = dateStr;
                     showAddEventModal();
