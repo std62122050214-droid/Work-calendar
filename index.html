@@ -11,7 +11,7 @@
         body { box-sizing: border-box; height: 100%; margin: 0; font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         html { height: 100%; }
         
-        /* --- Main Layout (ปฏิทิน + โน้ต) --- */
+        /* --- (ใหม่) Main Layout (ปฏิทิน + โน้ต) --- */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr; /* Mobile: 1 คอลัมน์ */
@@ -29,12 +29,16 @@
                 position: sticky;
                 top: 2rem;
             }
-            /* (ปรับแก้) ให้ #notes-list-wrapper เป็นตัวเลื่อน */
             #notes-list-wrapper {
-                flex-grow: 1; /* ยืดให้เต็มพื้นที่ที่เหลือ */
-                overflow-y: auto; /* ทำให้เนื้อหาโน้ตเลื่อนได้ */
-                padding-right: 8px; /* เพิ่มช่องว่างสำหรับ scrollbar */
+                flex-grow: 1; 
+                overflow-y: auto; 
+                padding-right: 8px;
+                scrollbar-width: thin;
+                scrollbar-color: #cbd5e1 #f1f5f9;
             }
+            #notes-list-wrapper::-webkit-scrollbar { width: 5px; }
+            #notes-list-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
+            #notes-list-wrapper::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 6px; }
         }
         /* ------------------------------------- */
 
@@ -110,7 +114,7 @@
         .day-name-short { display: none; }
         .desktop-text { display: inline; }
 
-        @media (max-width: 1023px) { /* (ปรับแก้) เปลี่ยน breakpoint เป็น 1023px */
+        @media (max-width: 1023px) { 
             .container { padding: 4px; }
             .calendar-day { height: 100px; padding: 2px; }
             .day-number { font-size: 0.8rem; }
@@ -714,7 +718,9 @@
             if (noteContent) {
                 const newNote = {
                     content: noteContent,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                    // (แก้ไข) บันทึกเวลาปัจจุบันเป็น ISO String
+                    createdAt: new Date().toISOString(), 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP // (คงไว้เพื่อเรียงลำดับ)
                 };
                 
                 notesListRef.push(newNote)
@@ -737,19 +743,19 @@
             }
         }
         
-        // 3. (ใหม่) ฟังก์ชันแสดงผลลิสต์โน้ต
+        // 3. (แก้ไข) ฟังก์ชันแสดงผลลิสต์โน้ต (เพิ่ม Timestamp)
         function renderNotesList(notesData) {
             const notesWrapper = document.getElementById('notes-list-wrapper');
-            notesWrapper.innerHTML = ''; // เคลียร์ของเก่า
+            notesWrapper.innerHTML = ''; 
 
             if (!notesData) {
                 notesWrapper.innerHTML = '<p class="text-gray-500 text-center text-sm py-4">ยังไม่มีโน้ต</p>';
                 return;
             }
             
-            // เรียงโน้ตจากใหม่ไปเก่า (ตาม Timestamp)
             const sortedNoteKeys = Object.keys(notesData).sort((a, b) => {
-                return notesData[b].timestamp - notesData[a].timestamp;
+                // (แก้ไข) เรียงลำดับโดยใช้ server timestamp
+                return (notesData[b].timestamp || 0) - (notesData[a].timestamp || 0);
             });
             
             sortedNoteKeys.forEach(noteKey => {
@@ -757,12 +763,27 @@
                 const noteDiv = document.createElement('div');
                 noteDiv.className = 'bg-yellow-100 p-3 rounded-lg shadow relative';
                 
-                // (เพิ่ม) แปลง \n (บรรทัดใหม่) ให้เป็น <br> เพื่อแสดงผล
+                // (แก้ไข) จัดรูปแบบ Timestamp (ถ้ามี)
+                let formattedTimestamp = '';
+                if (note.createdAt) {
+                    try {
+                        const date = new Date(note.createdAt);
+                        const day = date.getDate();
+                        const month = thaiMonths[date.getMonth()].substring(0, 3); // ย่อเดือน
+                        const year = date.getFullYear() + 543;
+                        const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        formattedTimestamp = `<div class="text-xs text-gray-500 mt-2 text-right">${day} ${month} ${year}, ${time} น.</div>`;
+                    } catch (e) {
+                        console.warn("Error formatting note timestamp:", e);
+                    }
+                }
+
                 const formattedContent = note.content.replace(/\n/g, '<br>');
                 
                 noteDiv.innerHTML = `
                     <p class="text-sm text-gray-800 break-words whitespace-pre-wrap">${formattedContent}</p>
-                    <button class="absolute top-1 right-1 text-red-400 hover:text-red-700 text-xs" onclick="deleteNote('${noteKey}')">
+                    ${formattedTimestamp}
+                    <button class="absolute top-1 right-1 text-red-400 hover:text-red-700 text-xs" onclick="deleteNote('${noteKey}')" title="ลบโน้ต">
                         (X)
                     </button>
                 `;
