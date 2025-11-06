@@ -11,7 +11,7 @@
         body { box-sizing: border-box; height: 100%; margin: 0; font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         html { height: 100%; }
         
-        /* --- (ใหม่) Main Layout (ปฏิทิน + โน้ต) --- */
+        /* --- Main Layout (ปฏิทิน + โน้ต) --- */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr; /* Mobile: 1 คอลัมน์ */
@@ -213,7 +213,7 @@
                 </div>
             </div>
             <div class="notes-container bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">📝 บันทึกกิจกรรมอื่นๆ</h2>
+                <h2 id="notes-title" class="text-xl font-bold text-gray-800 mb-4">📝 บันทึกกิจกรรม (ทั่วไป)</h2>
                 
                 <div class="mb-4">
                     <textarea id="new-note-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="พิมพ์โน้ตใหม่ที่นี่..."></textarea>
@@ -275,17 +275,17 @@
         const db = firebase.database();
         const eventsRef = db.ref("calendar_events"); 
         
-        // --- (ใหม่) Firebase Reference สำหรับโน้ตลิสต์ ---
+        // --- Firebase Reference สำหรับโน้ตลิสต์ ---
         const notesListRef = db.ref("general_notes_list"); 
-        // ---------------------------------------------
-
+        
         let currentDate = new Date();
         let allEvents = {}; 
+        let allNotes = {}; // (ใหม่) ตัวแปรสำหรับเก็บโน้ตทั้งหมด
         let selectedEventKey = null; 
 
         const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-        // --- (FIXED) Holiday Data (2568 - 2575) - FULL VERSION ---
+        // --- Holiday Data (2568 - 2575) - FULL VERSION ---
         const thaiHolidays = {
             // 2568 (2025)
             '2025-01-01': 'ปีใหม่', '2025-02-12': 'มาฆบูชา', '2025-04-06': 'วันจักรี', '2025-04-07': 'ชดเชยจักรี',
@@ -422,6 +422,7 @@
 
             renderUpcomingEvents();
             renderMonthlySummary();
+            renderNotesList(); // (ใหม่) เรียกใช้ฟังก์ชันแสดงโน้ต
         }
 
         // (แก้ไข) ลบ Logic การเช็ควันพระ
@@ -628,6 +629,67 @@
             }).join('');
         }
 
+        // --- (ใหม่) Function: Render Notes List (Filtered by Month) ---
+        function renderNotesList() {
+            const notesWrapper = document.getElementById('notes-list-wrapper');
+            const notesTitle = document.getElementById('notes-title');
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+
+            // อัปเดตหัวข้อกล่องโน้ตตามเดือนที่ดู
+            notesTitle.textContent = `📝 บันทึกกิจกรรม (เดือน${thaiMonths[currentMonth]})`;
+            notesWrapper.innerHTML = '<div class="spinner"></div>'; // แสดง Spinner ก่อน
+
+            // กรองโน้ตเฉพาะเดือนที่กำลังดู
+            const sortedNotes = Object.entries(allNotes)
+                .map(([key, note]) => ({ key, ...note })) // เพิ่ม key เข้าไปใน object
+                .filter(note => {
+                    try {
+                        if (!note.createdAt) return false; // ข้ามโน้ตที่ไม่มีเวลาสร้าง
+                        const noteDate = new Date(note.createdAt);
+                        return noteDate.getFullYear() === currentYear && noteDate.getMonth() === currentMonth;
+                    } catch (e) {
+                        return false;
+                    }
+                })
+                .sort((a, b) => {
+                    // เรียงจากใหม่ไปเก่า
+                    return (b.timestamp || 0) - (a.timestamp || 0);
+                });
+
+            if (sortedNotes.length === 0) {
+                notesWrapper.innerHTML = `<p class="text-gray-500 text-center text-sm py-4">ไม่มีโน้ตในเดือนนี้</p>`;
+                return;
+            }
+            
+            notesWrapper.innerHTML = ''; // เคลียร์ Spinner
+
+            sortedNotes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'bg-yellow-100 p-3 rounded-lg shadow relative';
+                
+                let formattedTimestamp = '';
+                try {
+                    const date = new Date(note.createdAt);
+                    const day = date.getDate();
+                    const month = thaiMonths[date.getMonth()].substring(0, 3); // ย่อเดือน
+                    const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    formattedTimestamp = `<div class="text-xs text-gray-500 mt-2 text-right">${day} ${month}, ${time} น.</div>`;
+                } catch (e) {}
+
+                // แปลง \n (การขึ้นบรรทัดใหม่) ให้เป็น <br>
+                const formattedContent = note.content.replace(/\n/g, '<br>');
+                
+                noteDiv.innerHTML = `
+                    <p class="text-sm text-gray-800 break-words whitespace-pre-wrap">${formattedContent}</p>
+                    ${formattedTimestamp}
+                    <button class="absolute top-1 right-1 text-red-400 hover:text-red-700 text-xs" onclick="deleteNote('${note.key}')" title="ลบโน้ต">
+                        (X)
+                    </button>
+                `;
+                notesWrapper.appendChild(noteDiv);
+            });
+        }
 
         // --- Modal Functions and Event Handlers ---
 
@@ -718,9 +780,8 @@
             if (noteContent) {
                 const newNote = {
                     content: noteContent,
-                    // (แก้ไข) บันทึกเวลาปัจจุบันเป็น ISO String
-                    createdAt: new Date().toISOString(), 
-                    timestamp: firebase.database.ServerValue.TIMESTAMP // (คงไว้เพื่อเรียงลำดับ)
+                    createdAt: new Date().toISOString(), // บันทึกเวลาปัจจุบัน
+                    timestamp: firebase.database.ServerValue.TIMESTAMP 
                 };
                 
                 notesListRef.push(newNote)
@@ -733,8 +794,8 @@
             }
         };
 
-        // 2. ฟังก์ชันสำหรับลบโน้ต (จะถูกเรียกใช้จากปุ่มที่สร้างใน renderNotesList)
-        function deleteNote(noteKey) {
+        // 2. ฟังก์ชันสำหรับลบโน้ต (ต้องมี `window.` เพื่อให้ HTML onclick เรียกได้)
+        window.deleteNote = (noteKey) => {
             if (noteKey && confirm('คุณต้องการลบโน้ตนี้หรือไม่?')) {
                 notesListRef.child(noteKey).remove()
                     .catch(error => {
@@ -743,61 +804,12 @@
             }
         }
         
-        // 3. (แก้ไข) ฟังก์ชันแสดงผลลิสต์โน้ต (เพิ่ม Timestamp)
-        function renderNotesList(notesData) {
-            const notesWrapper = document.getElementById('notes-list-wrapper');
-            notesWrapper.innerHTML = ''; 
-
-            if (!notesData) {
-                notesWrapper.innerHTML = '<p class="text-gray-500 text-center text-sm py-4">ยังไม่มีโน้ต</p>';
-                return;
-            }
-            
-            const sortedNoteKeys = Object.keys(notesData).sort((a, b) => {
-                // (แก้ไข) เรียงลำดับโดยใช้ server timestamp
-                return (notesData[b].timestamp || 0) - (notesData[a].timestamp || 0);
-            });
-            
-            sortedNoteKeys.forEach(noteKey => {
-                const note = notesData[noteKey];
-                const noteDiv = document.createElement('div');
-                noteDiv.className = 'bg-yellow-100 p-3 rounded-lg shadow relative';
-                
-                // (แก้ไข) จัดรูปแบบ Timestamp (ถ้ามี)
-                let formattedTimestamp = '';
-                if (note.createdAt) {
-                    try {
-                        const date = new Date(note.createdAt);
-                        const day = date.getDate();
-                        const month = thaiMonths[date.getMonth()].substring(0, 3); // ย่อเดือน
-                        const year = date.getFullYear() + 543;
-                        const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                        formattedTimestamp = `<div class="text-xs text-gray-500 mt-2 text-right">${day} ${month} ${year}, ${time} น.</div>`;
-                    } catch (e) {
-                        console.warn("Error formatting note timestamp:", e);
-                    }
-                }
-
-                const formattedContent = note.content.replace(/\n/g, '<br>');
-                
-                noteDiv.innerHTML = `
-                    <p class="text-sm text-gray-800 break-words whitespace-pre-wrap">${formattedContent}</p>
-                    ${formattedTimestamp}
-                    <button class="absolute top-1 right-1 text-red-400 hover:text-red-700 text-xs" onclick="deleteNote('${noteKey}')" title="ลบโน้ต">
-                        (X)
-                    </button>
-                `;
-                notesWrapper.appendChild(noteDiv);
-            });
-        }
-
-
         // --- Firebase Data Listeners ---
         
         // 1. Listener สำหรับ Events
         eventsRef.on('value', (snapshot) => {
             allEvents = snapshot.val() || {};
-            renderCalendar();
+            renderCalendar(); // (แก้ไข) เรียก renderCalendar() เพื่ออัปเดตทุกส่วน
         }, (error) => {
             console.error("Firebase (events) data load error:", error);
             document.getElementById('calendar-days').innerHTML = '<div class="col-span-7 p-10 text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูลกิจกรรม</div>';
@@ -806,8 +818,8 @@
 
         // 2. (ใหม่) Listener สำหรับ Notes List
         notesListRef.on('value', (snapshot) => {
-            const notesData = snapshot.val();
-            renderNotesList(notesData);
+            allNotes = snapshot.val() || {}; // (แก้ไข) เก็บโน้ตทั้งหมดไว้ในตัวแปร
+            renderNotesList(); // (แก้ไข) เรียกใช้ renderNotesList() เพื่อกรองและแสดงผล
         }, (error) => {
             console.error("Firebase (notes) data load error:", error);
             document.getElementById('notes-list-wrapper').innerHTML = '<p class="text-red-500 text-center text-sm py-4">ไม่สามารถโหลดโน้ตได้</p>';
@@ -817,6 +829,8 @@
         document.getElementById('add-event-btn').onclick = showAddEventModal;
         document.getElementById('cancel-event-btn').onclick = () => closeModal('add-event-modal');
         document.getElementById('close-details-btn').onclick = () => closeModal('event-details-modal');
+        
+        // (แก้ไข) เมื่อเปลี่ยนเดือน ให้ re-render ทุกอย่าง (รวมถึงโน้ต)
         document.getElementById('prev-month').onclick = () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
